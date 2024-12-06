@@ -1,0 +1,20 @@
+Name: STATS_CITREE
+Dialog-Specs: citree.cfe
+Command-Specs: STATS_CITREE.XML,STATS_INSERT_CHART.XML
+Code-Files: STATS_INSERT_CHART.py,STATS_CITREE.R
+Misc-Files: stats_cit.docx,extsyntax.css,defaultdialogicon.png,LICENSE
+Summary: Conditional inference and regression trees
+Description: This procedure calculates and displays conditional infere
+ nce and model-based trees.  Tree tables and plots are available, and 
+ the tree can be used for predictions
+Author: Jon K. Peck
+Version: 0.9.0
+Product-Version: 27
+Date: 12/5/2024
+Product-Version-Maximum: 30
+Categories: tree statistics 
+Plugins: Python,R
+Python-Version: 3
+R-Packages: mob,partykit,glmtree,vcd,ctree,strucchange,lmtree
+Extension-Bundles: STATS_INSERT_CHART
+Translation-Catalogues: 

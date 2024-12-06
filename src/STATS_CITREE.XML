@@ -1,0 +1,68 @@
+<!-- (C) Copyright Jon K Peck, 2024                             -->
+<Command xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Name="STATS CITREE" Language="R" Mode="Source">
+	<Subcommand Name="" IsArbitrary="False" Occurrence="Optional">
+		<Parameter Name="DEPVARS" ParameterType="VariableNameList"/>
+		<Parameter Name="INDVARS" ParameterType="VariableNameList"/>
+		<Parameter Name="ESTIMATE" ParameterType="Keyword"/>
+		<Parameter Name="PREDICT" ParameterType="Keyword"/>
+		<Parameter Name="IDVAR" ParameterType="VariableName"/>
+		<Parameter Name="REGRVARS" ParameterType="VariableNameList"/>
+		<Parameter Name="USEFILE" ParameterType="InputFile"/>
+		<Parameter Name="USEWORKSPACE" ParameterType="Keyword"/>
+		<Parameter Name="MODELTYPE" ParameterType="Keyword"/>
+		<Parameter Name="FACTORMODE" ParameterType="Keyword"/>
+	</Subcommand>
+	
+	<Subcommand Name="OPTIONS">
+		<Parameter Name="KEEPUSERMISSING" ParameterType="Keyword"/>
+		<Parameter Name="TESTSTAT" ParameterType="Keyword"/>
+		<Parameter Name="SPLITSTAT" ParameterType="Keyword"/>
+		<Parameter Name="TESTTYPE" ParameterType="KeywordList"/>
+		<Parameter Name="ALPHA" ParameterType="Number"/>
+		<Parameter Name="MINCRITERION" ParameterType="Number"/>
+		<Parameter Name="MINSPLITSUM" ParameterType="Integer"/>
+		<Parameter Name="MINTERMINAL" ParameterType="Integer"/>
+		<Parameter Name="MINPROB" ParameterType="Number"/>
+		<Parameter Name="MAXDEPTH" ParameterType="Integer"/>
+		<Parameter Name="MINSIZE" ParameterType="Integer"/>
+		<Parameter Name="BONFERRONI" ParameterType="Keyword"/>
+		<Parameter Name="TRIM" ParameterType="Number"/>
+		<Parameter Name="PRUNE" ParameterType="Keyword"/>
+		<Parameter Name="ORDINAL" ParameterType="Keyword"/>
+		<Parameter Name="MAXSURROGATES" ParameterType="Integer"/>
+	</Subcommand>
+	
+	<Subcommand Name="OUTPUT">
+		<Parameter Name="LABELS" ParameterType="Keyword"/>
+		<Parameter Name="TREES" ParameterType="Keyword"/>
+	</Subcommand>
+	
+	<Subcommand Name="DISPLAY">
+		<Parameter Name="TREES" ParameterType="IntegerList"/>
+		<Parameter Name="CONFUSION" ParameterType="Keyword"/>
+		<Parameter Name="SCTESTS" ParameterType="Keyword"/>
+		<Parameter Name="PLOTS" ParameterType="IntegerList"/>
+		<Parameter Name="MAINHEIGHT" ParameterType="Number"/>
+		<Parameter Name="MAINWIDTH" ParameterType="Number"/>
+		<Parameter Name="SUBHEIGHT" ParameterType="Number"/>
+		<Parameter Name="SUBWIDTH" ParameterType="Number"/>
+		<Parameter Name="FONTSIZE" ParameterType="Number"/>
+		<Parameter Name="INNERPLOTS" ParameterType="Keyword"/>
+		<Parameter Name="TERMSTATS" ParameterType="Keyword"/>
+	</Subcommand>
+	
+	<Subcommand Name="SAVE">
+		<Parameter Name="MODELFILE" ParameterType="OutputFile"/>
+		<Parameter Name="DATASET" ParameterType="VariableName"/>
+		<Parameter Name="PREDCLASS" ParameterType="VariableName"/>
+		<Parameter Name="PREDTYPE" ParameterType="Keyword"/>
+		<Parameter Name="QUANTILES" Parameter="NumberList"/>
+		<Parameter Name="PREDPROB" ParameterType="VariableName"/>
+		<Parameter Name="IGNORETHIS" ParameterType="LeadingToken"/>
+	</Subcommand>
+
+	<Subcommand Name="VIGNETTE">
+		<Parameter Name="VIGNETTELIST" ParameterType="TokenList"/>
+	</Subcommand>
+	<Subcommand Name="HELP" Occurrence="Optional"/>
+</Command>
