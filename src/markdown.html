@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=9" >
+
+<title>STATS CITREE Extension Command</title>
+
+<link rel="stylesheet" type="text/css" href="extsyntax.css" />
+</head>
+
+<body>
+
+
+<h1>STATS CITREE Extension command</h1>
+<p>
+This procedure estimates classification and regression trees. In contrast to the CHAID, CART, and QUEST algorithms available in the SPSS TREES procedure, conditional inference trees use statistical significance test levels on means or categorical data with multiple testing corrections to find splits. These trees are less likely to overfit and are, therefore, more stable. That is, they generalize better to new data and will have fewer false branches.
+</p>
+
+<p>Estimate and Predict Conditional Inference and Model-Oriented Trees</p>
+<div class="syntax">
+<p>STATS CITREE<br/>
+DEPVARS = variable list</em><sup>&#42;</sup><br/>
+INDVARS = variable list<sup>&#42;</sup><br/> 
+REGRVARS = variable list<br/>
+IDVAR = variable<br/>
+ESTIMATE = YES<sup>&#42;&#42;</sup> or NO<br/>
+PREDICT = NO<sup>&#42;&#42;</sup> or YES<br/>
+FACTORMODE = LABELS or LEVELS<br/>
+MODELTYPE = CTREE<sup>&#42;&#42;</sup> or MOBLINEAR or MOBLOGIT<br/>
+USEWORKSPACE = NO<sup>&#42;&#42;</sup> or YES</br>
+USEFILE = "filespec for a saved model"<br/>
+</p>
+
+<p>/SAVE<br/>
+MODELFILE = "file specification for saving model"<br/>
+DATASET = dataset name for predictions<br/>
+PREDTYPE = RESPONSE<sup>&#42;&#42;</sup> PROB QUANTILE  NODE</BR>
+QUANTILES = list of quantiles in [0, 1]</br>
+<p>
+<p>/DISPLAY<br/>
+TREES = list of tree numbers to print<br/>
+PLOTS = list of tree numbers to plot<br/>
+CONFUSION = YES<sup>&#42;&#42;</sup> or NO<br/>
+MAINHEIGHT = plot number 1 height in inches<br/>
+MAINWIDTH = plot number 1 height in inches<br/>
+SUBHEIGHT = subplots height<br/>
+SUBWIDTH = subplot width<br/>
+FONTSIZE = integer for plot font in points<br/>
+PLOTBG = background color</br>
+INNERPLOTS = NO<sup>&#42;&#42;</sup> or YES<br/>
+MATCHBG = YES<sup>&#42;&#42;</sup> or NO<br/>
+PLOTFILE = path for plots</br>
+PLOTFORMAT = PNG<sup>&#42;&#42;</sup> or SVG or PDF</br>
+SCTESTS = NO<sup>&#42;&#42;</sup> or YES for test table printing<br/>
+TERMSTATS = YES<sup>&#42;&#42;</sup> or NO for terminal node statistics table<br/>
+TERMINALPLOTS = YES<sup>&#42;&#42;</sup> or NO for showing plots in terminal nodes<br/>
+NODEPATHS = NO<sup>&#42;&#42;</sup> or YES to include paths to terminal nodes in termstats table<br/>
+</p>
+
+/OPTIONS<BR/>
+MISSINGVALUES = EXCLUDE<sup>&#42;&#42;</sup> or INCLUDE<br>
+MULTIWAY = NO<sup>&#42;&#42;</sup> or YES</br>
+-- options for CTREE models -- <br/>
+TESTSTAT = QUADRATIC or MAXIMUM<BR/>
+ALPHA = p-value <BR/>
+SPLITSTAT = QUADRATIC<sup>&#42;&#42;</sup> or MAXIMUM<BR/>
+TESTTYPE = BONFERRONI<sup>&#42;&#42;</sup> or MONTECARLO or UNIVARIATE or TESTSTATISTIC<BR/>
+MINCRITERION = number<BR/>
+MINSPLITSUM  = number<BR/>
+MINTERMINAL = number<BR/>
+MINPROB = number<BR/>
+MAXSURROGATES = integer<BR/>
+MAXDEPTH = integer<BR/>
+CORES = integer<br/>
+-- options for MOB models--</BR>
+ALPHA = p-value <BR/>
+BONFERRONI = YES<sup>&#42;&#42;</sup> or NO<BR/>
+TRIM = fractional number<BR/>
+PRUNE = AIC or BIC (none if omitted)<BR/>
+ORDINAL = CHISQ<sup>&#42;&#42;</sup> or MAX or L2<BR/>
+MINSIZE = number<BR/>
+MAXDEPTH = integer<BR/>
+</P>
+/VIGNETTES<br/>
+VIGNETTELIST = DIALOGHELP or SYNTAXHELP or PARTYKIT or CTREE or MOB</br>
+</p>
+
+<p><sup>&#42;</sup> Required<br/>
+<sup>&#42;&#42;</sup> Default</p>
+</div>
+
+<p>STATS CITREE /HELP.  prints this information and does nothing else,
+but the VIGNETTES keYword is generally a better choice.</p>
+
+<pre class="example"><code>STATS CITREE DEPVARS=salary INDVARS=jobcat jobtime prevexp minority 
+IDVAR=id FACTORMODE=LABELS MODELTYPE=CTREE USEWORKSPACE=YES ESTIMATE=YES PREDICT=YES 
+/DISPLAY TREES=1  PLOTS=1 FONTSIZE=9  SCTESTS=NO TERMSTATS=YES.
+</code></pre>
+
+<h2>Details</h2>
+<p>SPLIT FILES is not honored by this command.</p>
+<p>See the dialog help for more details on the command.</p>
+<h3>Estimation and Prediction</h3>
+<p><p><strong>DEPVARS</strong> specifies one or more dependent variables for the tree.  Some functions only allow one
+variable.  The variables' measurement levels determine the type of the tree.</p>
+
+<p><strong>INDVARS</strong> is the list of one or more variables to be used for splitting.</p>
+
+<p><strong>REGRVARS</strong> only applies to MOBLINEAR and MOBLOGISTIC model types.  It specifies the
+list of regressors for the linear or logistic regression model.</p>
+<p><strong>IDVAR</strong> specifies an ID variable.  It is required if making predictions.
+The variable can be used in merging the prediction dataset back with the input dataset with 
+ADD FILES or similar commands. In some cases it might be necessary to adjust the variable type.
+The variable values must be unique.</p>
+
+<p><strong>ESTIMATE</strong> YES indicates that a tree should be estimated.</p>
+
+<p><p><strong>PREDICT</strong> YES indicates that a tree should be applied to a new dataset.
+The new dataset must have the same variables as were used for estimateion except that
+the IDVAR can be specified at estimation or prediction time.  For predicting, the
+variables will be retrieved from the new input dataset automatically.<p>
+
+<p>If neither ESTIMATE nor PREDICT is specified and a model has been estimated or reloaded from a file,
+the DISPLAY options can be used.  This means, in particular, that plot parameters can be changed
+without the necessity of reestimating the tree even if the previous estimated tree was not saved.
+<p><strong>FACTORMODE</strong> indicates whether categorical variable values or their value labels
+should be used.  The labels are better for displaying the estimated tree and plots,
+but for prediction, values are better, since value labels are not data and are not
+necessarily unique.  The two are equivalent if there are no value labels, but
+predictions cannot be made from actual labels.</p>
+
+<p><strong>MODELTYPE</strong> indicates the type of model to be estimated.
+CTREE estimates a standard conditional inference tree. MOBLINEAR indicates
+a linear regression tree and MOBLOGISTIC indicates a logistic regresion tree.
+For MOB types, the tree shows the regression estimates where they are significantly
+different across splits.</p>
+
+<strong>USEWORKSPACE</strong> indcates that the tree currently in the workspace
+be used for prediction.  The most recently estimated or loaded model in the
+current session is availble for prediction use.</p>
+
+<strong>USEFILE</strong> specifies a file containing a model that was saved
+by <strong>SAVE MODELFILE</strong>.  Using it would replace any model currently
+in the workspace.</p>
+
+<p>If neither ESTIMATE nor PREDICT is specified but a model is in the workspace,
+its parameters will be displayed, and it can be used for displays.</p>
+
+<p><strong>MODELFILE</strong> specifies a file for saving the model for future use.
+It will be an R rdata file.</p>
+<h3>Prediction Parameters</h3>
+
+<p><strong>DATASET</strong> specifies a dataset name for the predicted values.
+The dataset must not already be in use.</p>
+
+<p><strong>PREDTYPE</strong> specifies the type of predictions to be made.
+<ul>
+<li>RESPONSE is the predicted mean for a scale variable and the predicted category
+for a categorical variable.</li>
+<li>QUANTILE specifies that quantiles be saved.  It only applies to scale variables.</li>
+<li>PREDPROB specifies the probability of the predicted class.</li>
+<li>NODE specifies that the node number be saved.  This can be very useful after
+merging the predicted dataset back to the input for examining the properties of the
+terminal nodes involvign other variables<li>
+</ul>
+<p><strong>QUANTILES</strong> specifies the list of quantiles to be saved
+if QUANTILE is chosen as the prediction type.</p>
+
+<h3>Displaying Results</h3>
+
+<strong>TREES</strong> specifies a list of one or more trees to display.
+Trees are identified by their node number in the tree outline. Tree number 1
+is the root, so the entire tree is displayed.  Higher numbers display subtrees
+starting with that node.  Entering 0 in the list causes any subsequent numbers
+to be ignored.  By default, node 1, the entire tree, is displayed, but if it is
+large, displaying several subtrees may produce more readable output.</p>
+
+<strong>PLOTS</strong> specifies one or more plots of the tree to be displayed.
+The behavior is the same as for TREES.</p>
+
+<strong>CONFUSION</strong> specifies that a confusion table be displayed.  It
+only applies to categorical dependent variables.  The rows include all value labels
+for the dependent variable whether or not such values occur in the data.</p>
+
+<strong>MAINHEIGHT, MAINWIDTH, SUBHEIGHT,</strong> and <strong>SUBWIDTH</strong>  display
+the sizes of the plots in inches.  The MAIN dimensions apply to plot number 1, and the
+SUB values apply to any subplots.  The procedure attempts to use an approximately
+appropriate size, but this cannot be determined exactly, so specifying a size
+allows the user to control the size as needed.  Since the model is retained in the
+workspace by default, it is easy to revise the plots without reestimating the model.<p>
+
+<strong>FONTSIZE</strong> controlsl the point size of the font used in the
+plots.  It defaults to 10 points.</p>
+
+<strong>PLOTBG</strong> specifies the background color for the plots. It can be any
+valid R color name.  The default is lightblue.</p>
+
+<strong>INNERPLOTS</strong> specifies whether small plots are displayed at the interior
+nodes of the trees.  This will likely require enlarging the plot size.</p>
+
+<strong>MATCHBG</strong> specifies whether the interior plot backgrounds match the
+general background of the plot or are white like the nodes themselves.</p>
+
+<strong>PLOTFILE</strong> specifies the file path for the plots.
+The node numbers will be added to the file names for the plot and have the extension appropriate for the chosen format.</p>
+
+<strong>PLOTFORMAT</STRONG> specifies the format for the plot files.  The default is PNG, which is the format for the
+plots in the Viewer.
+SVG format may be the best choice if the software to be used for display 
+supports that format, because it is resizable and editable.</p>
+
+<strong>TERMINALPLOTS</strong> controls whether small plots are displayed for each terminal node.</p>
+
+<strong>NODEPATHS</strong> controls whether a column showing the definition of each
+terminal node in SPSS syntax is include in the termstats table.  The syntax shown may not be directly runnable due to
+differences in the way SPSS and R handle single and double quoted text.</p> 
+
+<strong>SCTESTS</strong> specifies that a table showing all the significance test
+values be displayed as a table whether or not that splitpoint shows in the tree.</p>
+
+<strong>TERMSTATS</strong> specifies to display a table of statistics for the terminal
+nodes of the tree.  It shows means for scale-level dependent variables and modes for
+categorical variables.  
+
+<h3>Options</h3>
+<p>These keywords control the statistical properties of the tree estimation.
+The options for CTREE models and MOB models are different.</p>
+
+<p><strong>MULTIWAY</strong> specifies whether multiway splits are enabled for
+nominal variables.</p>
+
+<p><strong>MISSINGVALUES</strong> specifies whether to include user missing values
+in the tree.  System missing values are never included.</p>
+
+<p>options for CTREE models</p>
+
+<p><strong>TESTSTAT</strong>: the type of the test statistic to be applied for variable selection</P>
+
+<p><strong>ALPHA</strong>: the significance level for variable selection</P>
+
+<p><strong>SPLITSTAT</strong>: the type of the test statistic to be applied for splitpoint selection</P>
+
+<P><strong>TESTTYPE</strong>: how to compute the distribution of the test statistic. The first three options refer to p-values as criterion, Teststatistic uses the raw statistic as criterion. Bonferroni and Univariate relate to p-values from the asymptotic distribution (adjusted or unadjusted). Bonferroni-adjusted Monte-Carlo p-values are computed when both Bonferroni and MonteCarlo are given.</p>
+
+<p><strong>MINCRITERION</strong>: the value of the test statistic or 1 - p-value that must be exceeded in order to implement a split</p>
+
+<p><strong>MINSPLITSUM</strong>: minimum sum of weights in a node in order to be considered for splitting</p>
+
+<p><strong>MINTERMINAL</strong>:the minimum sum of weights in a terminal node</p>
+
+<p><strong>MINPROB</strong>: proportion of observations needed to establish a terminal node</p>
+
+<p><strong>MAXSURROGATES</strong>: number of surrogate splits to evaluate</p>
+
+<p><strong>MAXDEPTH</strong>: maximum depth of the tree</p>
+
+<p><strong>CORES</strong>: number of CPU cores to use in the computation. 
+Most modern computers provide multiple CPU cores.  The default value is 1, but for large problems, increasing this value may speed up the procedure  considerably.  However, the availability and benefit may var with the operating system in use.</p>
+
+<p>options for MOB</p>
+
+<p><strong>ALPHA</strong>: numeric significance level. A node is split when the possibly Bonferroni-corrected
+p value for any parameter stability test in that node falls below alpha</p>
+
+<p><strong>BONFERRONI</strong>: correct p values with Bonferroni correction </p>
+
+<p><strong>TRIM</strong> trimming in the parameter instability test for the numerical variables. If smaller than 1, it is interpreted as the fraction relative to the current node size</p>
+<p><strong>PRUNE</strong> AIC or BIC is used for post-pruning based on the corresponding information criteria.  If omitted, no pruning is done</p>
+
+<p><strong>ORDINAL</strong>:  the type of parameter instability test that should be employed for ordinal partitioning variables, i.e., ordinal categorical variables. If CHISQ, then the variable is treated as unordered and a chi-squared test is performed. If L2, then a maxLM-type test as for numeric variables is carried out but correcting for ties. This requires simulation of p-values and requires some computation time. For MAX, a weighted double maximum test is used that computes p-values</P>
+
+<p><strong>MINSIZE</strong> minimum number of observations in a node.  the default is to use 10 times the number of parameters to be estimated divided by the number of responses per observation if that is greater than 1.</P>
+<P><STRONG>MAXDEPTH</strong>: the maximum depth of the tree<P>
+
+<h3>Vignette</h3>
+
+<p<strong>VIGNETTELIST</strong>: Display selected articles.  DIALOGHELP and SYNTAXHELP refer to
+the use of this procedure.  The other keywords refer to articles covering the statistical foundations
+of the procedure along with information on the R code which is not needed for SPSS users.</p>
+
+<h2>Acknowledgements</h2>
+<p>The main R modules used by this procedure were written by
+Torsten Hothorn. Kurt Hornik, and Achim Zeileis
+</p>
+<p style="font-size:80%;">© Copyright Jon K. Peck 2024</p>
+</body>
+
+</html>
+

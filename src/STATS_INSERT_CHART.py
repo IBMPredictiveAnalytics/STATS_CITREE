@@ -2,6 +2,7 @@
 
 # history
 # 13-Nov-2024  Original vesion
+# 09-Dec-2024  Update to handle multiple charts on one call via a file of names
 
 # Author: Jon K. Peck
 
@@ -13,34 +14,42 @@
  
 import spss, SpssClient
 from extension import Template, Syntax, processcmd
+import time
 
-def doinsertcharts(chart=None, header=None, position=None, outlinelabel=None, hidelog=False):
+def doinsertcharts(chartlist=None, header=None, outlinelabel=None, labelparm=None, hidelog=False):
     """Insert one or more charts into the Viewer
     
-    chartlist is the filespec of the chart to insert
+    chartlist is the filespec of the file holding list of chart to insert
     header is the outline title for the charts
-    position is the order.  If position is zero, new header is constructed
     outline label is the label for the item
+    labelparm is a list of appends to the outline label or None
     hidelog specifies that the most recent log block in the Viewer should be closed
     """
     # debugging
             # makes debug apply only to the current thread
-    #try:
-        #import wingdbstub
-        #import threading
-        #wingdbstub.Ensure()
-        #wingdbstub.debugger.SetDebugThreads({threading.get_ident(): 1})
-    #except:
-        #pass
+    try:
+        import wingdbstub
+        import threading
+        wingdbstub.Ensure()
+        wingdbstub.debugger.SetDebugThreads({threading.get_ident(): 1})
+    except:
+        pass
+
+    if chartlist is not None:
+        with open(chartlist) as f:
+            charts = f.readlines()
+        charts = [item[:-1] for item in charts]  # eliminate newlines
+    else:
+        charts = None
 
     SpssClient.StartClient()
-    if chart is not None and (header is None or position is None or outlinelabel is None):
+    if chartlist is not None and (header is None or outlinelabel is None):
         raise ValueError("Missing keyword value")
     doc = SpssClient.GetDesignatedOutputDoc()
     itemlist = doc.GetOutputItems()
     # Get the root header item
     root = itemlist.GetItemAt(0).GetSpecificType()
-    if chart:
+    for position, chart in enumerate(charts):
         # Create a new header item
         if position == 0:
             theHeader = doc.CreateHeaderItem(header)
@@ -53,8 +62,10 @@ def doinsertcharts(chart=None, header=None, position=None, outlinelabel=None, hi
             headerItem =  root.GetChildItem(root.GetChildCount()-1)
         headerItem = headerItem.GetSpecificType()
         ###headerItem = root.GetChildItem(root.GetChildCount()-1).GetSpecificType()
-        # Create a new text item
-        outitem = doc.CreateImageChartItem(chart,f"{outlinelabel}")
+        # Create a new chart item
+        if labelparm:
+            lbl = outlinelabel + str(labelparm[position])
+        outitem = doc.CreateImageChartItem(chart,f"{lbl}")
         # Append the new item to the header item
         headerItem.InsertChildItem(outitem, position)
     if hidelog:
@@ -73,14 +84,14 @@ def hidethelog(itemlist):
                         item.SetVisible(False)
                         break
     
-def  Run(args):
-    """Execute the STATS INSERT CHARTS command"""
-
+def Run(args):
+    """Execute the STATS INSERT CHART command"""
+    
     args = args[list(args.keys())[0]]
 
     oobj = Syntax([
-        Template("CHART", subc="",  ktype="str", var="chart", islist=False),
-        Template("POSITION", subc="",  ktype="int", var="position", islist=False),
+        Template("CHARTLIST", subc="",  ktype="str", var="chartlist", islist=False),
+        Template("LABELPARM", subc="",  ktype="int", var="labelparm", islist=True),
         Template("HEADER", subc="", ktype="literal", var="header", islist=False), 
         Template("OUTLINELABEL", subc="", ktype="literal", var="outlinelabel", islist=False),
         Template("HIDELOG", subc="", ktype="bool", var="hidelog", islist=False)

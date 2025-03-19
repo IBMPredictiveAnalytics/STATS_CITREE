@@ -12,9 +12,8 @@
 		<Parameter Name="MODELTYPE" ParameterType="Keyword"/>
 		<Parameter Name="FACTORMODE" ParameterType="Keyword"/>
 	</Subcommand>
-	
 	<Subcommand Name="OPTIONS">
-		<Parameter Name="KEEPUSERMISSING" ParameterType="Keyword"/>
+		<Parameter Name="MISSINGVALUES" ParameterType="Keyword"/>
 		<Parameter Name="TESTSTAT" ParameterType="Keyword"/>
 		<Parameter Name="SPLITSTAT" ParameterType="Keyword"/>
 		<Parameter Name="TESTTYPE" ParameterType="KeywordList"/>
@@ -30,13 +29,13 @@
 		<Parameter Name="PRUNE" ParameterType="Keyword"/>
 		<Parameter Name="ORDINAL" ParameterType="Keyword"/>
 		<Parameter Name="MAXSURROGATES" ParameterType="Integer"/>
+		<Parameter Name="MULTIWAY" ParameterType="Keyword"/>
+		<Parameter Name="CORES" ParameterType="Integer"/>
 	</Subcommand>
-	
 	<Subcommand Name="OUTPUT">
 		<Parameter Name="LABELS" ParameterType="Keyword"/>
 		<Parameter Name="TREES" ParameterType="Keyword"/>
 	</Subcommand>
-	
 	<Subcommand Name="DISPLAY">
 		<Parameter Name="TREES" ParameterType="IntegerList"/>
 		<Parameter Name="CONFUSION" ParameterType="Keyword"/>
@@ -48,19 +47,23 @@
 		<Parameter Name="SUBWIDTH" ParameterType="Number"/>
 		<Parameter Name="FONTSIZE" ParameterType="Number"/>
 		<Parameter Name="INNERPLOTS" ParameterType="Keyword"/>
+		<Parameter Name="INNERCOLOR" ParameterType="Keyword"/>
+		<Parameter Name="PLOTFILE" ParameterType="OutputFile"/>
+		<Parameter Name="PLOTFORMAT" ParameterType="Keyword"/>
+		<Parameter Name="PLOTBG" ParameterType="Keyword"/>
 		<Parameter Name="TERMSTATS" ParameterType="Keyword"/>
+		<Parameter Name="NODEPATHS" ParameterType="Keyword"/>
+		<Parameter Name="TERMINALPLOTS" ParameterType="Keyword"/>
 	</Subcommand>
-	
 	<Subcommand Name="SAVE">
 		<Parameter Name="MODELFILE" ParameterType="OutputFile"/>
 		<Parameter Name="DATASET" ParameterType="VariableName"/>
 		<Parameter Name="PREDCLASS" ParameterType="VariableName"/>
-		<Parameter Name="PREDTYPE" ParameterType="Keyword"/>
+		<Parameter Name="PREDTYPE" ParameterType="KeywordList"/>
 		<Parameter Name="QUANTILES" Parameter="NumberList"/>
 		<Parameter Name="PREDPROB" ParameterType="VariableName"/>
 		<Parameter Name="IGNORETHIS" ParameterType="LeadingToken"/>
 	</Subcommand>
-
 	<Subcommand Name="VIGNETTE">
 		<Parameter Name="VIGNETTELIST" ParameterType="TokenList"/>
 	</Subcommand>

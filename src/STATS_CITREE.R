@@ -5,7 +5,8 @@
 # version 1.0.0
 
 # history
-# Dec-2024 Initial version
+# Dec-2024    Initial version
+# Jan-12-2025 Initial release
 
 
 # helpers
@@ -105,7 +106,7 @@ Warn = function(procname, omsid) {
                 )
             }
             if (procok) {  # build and display a Warnings table if we can
-                table = spss.BasePivotTable("Warnings ","Warnings", isSplit=FALSE) # do not translate this
+                table = spss.BasePivotTable("Warnings and Messages","Warnings", isSplit=FALSE) # do not translate this
                 rowdim = BasePivotTable.Append(table,Dimension.Place.row,
                                                gtxt("Message Number"), hideName = FALSE,hideLabels = FALSE)
 
@@ -125,6 +126,7 @@ Warn = function(procname, omsid) {
     }
     return(lcl)
 }
+
 
 casecorrect = function(vlist, warns) {
     # correct the case of variable names
@@ -148,7 +150,25 @@ casecorrect = function(vlist, warns) {
     return(correctednames)
 }
 
+getextloc = function() {
+    # find where extensions are installed
+    
+    rantag = runif(1, 0.05, 1)
+    cmd = sprintf('preserve.
+    set olang=english.
+    oms select tables /if subtypes=["System Settings"]
+    /destination format=oxml xmlworkspce="%s", viewer=no.
+    show ext.
+    omsend.
+    restore.', rantag)
 
+    spsspkg.Submit(cmd)
+    
+    pth = '//pivotTable//group[@text="EXTPATHS EXTENSIONS"]//category[@text="Setting"]/cell/@*'
+    res <- spssxmlworkspace.EvaluateXPath(rantag, context="/", pth)
+    spssxmlworkspace.DeleteXmlWorkspaceObject(rantag)
+    return(res[1])
+}
 
 
 procname=gtxt("Conditional Inference Trees")
@@ -162,10 +182,7 @@ warns = Warn(procname=warningsprocname,omsid=omsid)
 # or a saved tree that is reloaded
 # The parameters for the model are always displayed if available
 
-# Vignettes
-viglist = list(partykit="https://cran.r-project.org/web/packages/partykit/vignettes/partykit.pdf",
-    ctree="https://cran.r-project.org/web/packages/partykit/vignettes/ctree.pdf",
-    mob="https://cran.r-project.org/web/packages/partykit/vignettes/mob.pdf")
+
 
 # (ignorethis appears because subcommands are not allowed to be empty by the SPWS parser)
 # The inner nodes plotting feature is available but is undocumented, because
@@ -173,46 +190,50 @@ viglist = list(partykit="https://cran.r-project.org/web/packages/partykit/vignet
 
 docitree<-function(idvar=NULL, depvars=NULL, indvars=NULL, regrvars=NULL,factormode="labels", 
     estimate=TRUE, predict=FALSE, usefile=NULL,useworkspace=FALSE, labels=FALSE, 
-    treestoprint=list(1), confusion=TRUE, keepusermissing=FALSE,
+    treestoprint=list(1), confusion=TRUE, missingvalues="exclude", multiway=FALSE,
     treestoplot=list(1), mainheight=NULL, mainwidth=NULL, subheight=NULL, subwidth=NULL,
-    innerplots=FALSE, fontsize=9, modelfile=NULL, datasetname=NULL,
-    predtype="response", quantiles=list(.10, .50, .90), teststat="quadratic",
+    innerplots=FALSE, fontsize=10, plotfile=NULL, plotformat="png", plotbg="ivory2", matchbg=TRUE,
+    modelfile=NULL, datasetname=NULL,
+    predtype=list("response"), quantiles=list(.10, .50, .90), teststat="quadratic",
     testtype=c("Bonferroni"), splitstat="quadratic", alpha=0.05, mincriterion=1-alpha,
     minsplit=20, minbucket=7, minprob=0.01, maxdepth=99999, maxsurrogate=0,
-    modeltype="ctree",  sctests=FALSE, termstats=TRUE,
+    modeltype="ctree",  sctests=FALSE, termstats=TRUE, nodepaths=FALSE, terminalplots=TRUE,
     bonferroni=TRUE, trim=0.1, prune=NULL, ordinal="chisq", minsize=NULL, vignettelist=NULL,
-    ignorethis=TRUE
+    ignorethis=TRUE, cores=1
     ) {
 
     domain<-"STATS_CITREE"
     setuplocalization(domain)
     
-    # display selected R vignettes
+    # display any selected vignettes and stop
     if (!is.null(vignettelist)) {
-        for (v in vignettelist) {
-            if (v %in% names(viglist)){
-                #browseURL(viglist[[v]], "?target=\"_blank\"")
-                browseURL(paste(viglist[[v]], "?_blank", sep=""))
-            } else {
-                warns$warn(gtxtf("The specified vignette, %s, is not available", v))
-            }
-        }
-        warns$warn("End of procedure", dostop=TRUE)
+        displayvignettes(vignettelist)
+    }
+    doest = estimate
+    dopred = predict
+    # If a temporary workspace copy has been saved, and not estimating or 
+    # loading a model file, reload it
+    wscopy = getOption("SPSSCITREE")
+    idvarcpy = idvar
+    if (!doest && dopred && is.null(usefile) && (is.null(wscopy) || !file.exists(wscopy))) {
+        warns$warn(gtxt("No tree is available for use in prediction"), dostop=TRUE)
+    }
+    if (!is.null(wscopy) && file.exists(wscopy) && is.null(usefile)
+        && !doest) {
+        load(wscopy)
+        warns$warn(gtxtf("workspace restored from %s", file.info(wscopy)$mtime), dostop=FALSE)
+        if (is.null(idvar)) {
+            idvar = idvarcpy
+        } 
     }
     # case correct some settings
-    # if (ordinal == "l2") {ordinal="L2"}
-    # if (testtype == "bonferroni") {testtype = "Bonferroni"}
-    # if (testtype == "montecarlo") {testtype = "MonteCarlo"}
-    # if (testtype == "univariate") {testtype = "Univariate"}
-    # if (testtype == "teststatistic") {testtype = "Teststatistic"}
     testtype = ttcorrect(testtype, warns)
     
     weightvar = spssdictionary.GetWeightVariable()
-    doest = estimate
-    dopred = predict
+
     if (doest && (is.null(depvars) || is.null(indvars))) {
-        warns$warn(gtxt("Dependent and Independent variables must be specified if estimating",
-            dostop=TRUE))
+        warns$warn(gtxt("Dependent and independent variables must be specified if estimating"),
+            dostop=TRUE)
     }
     
     if (doest && !is.null(usefile)) {
@@ -224,10 +245,10 @@ docitree<-function(idvar=NULL, depvars=NULL, indvars=NULL, regrvars=NULL,factorm
     # if (any(printorplot > 0) && !doest && is.null(useworkspace) && is.null(usefile)) {
     #     warns$warn(gtxt("If plotting only, a model source must be specified"), dostop=TRUE)
     # }
-    if (any(printorplot > 0) && !doest &&  is.null(usefile)) {
+    if (any(printorplot > 0) && !doest &&  is.null(usefile) && !exists("restree")) {
         warns$warn(gtxt("A  model source must be specified"), dostop=TRUE)
     }
-    if (!doest && is.null(usefile) && !is.null(modelfile)) {
+    if (!doest && is.null(usefile) && !is.null(modelfile) && !exists("restree")) {
         warns$warn(gtxt("A model file cannot be saved, because no model has been estimated or loaded"),
             dostop=TRUE)
     }
@@ -240,8 +261,13 @@ docitree<-function(idvar=NULL, depvars=NULL, indvars=NULL, regrvars=NULL,factorm
     }
     
     if (dopred) {
-        if (datasetname %in% spssdata.GetDataSetList()) {
+        datasetlist = spssdata.GetDataSetList()
+        if (tolower(datasetname) %in% tolower(datasetlist)) {
             warns$warn(gtxt("The prediction dataset specified already exists.  Please close it or choose a different name"), 
+                dostop=TRUE)
+        }
+        if ("*" %in% datasetlist) {
+            warns$warn(gtxt("The input dataset must have a name if doing predictions.  Please assign one and rerun the procedure."),
                 dostop=TRUE)
         }
     }
@@ -249,20 +275,13 @@ docitree<-function(idvar=NULL, depvars=NULL, indvars=NULL, regrvars=NULL,factorm
     if (!is.null(usefile) && useworkspace) {
          warns$warn("Cannot specify both file and model workspace as model source", dostop=TRUE)
     }
+    idvarcpy = idvar
     if (!is.null(usefile)) {
-        idvarcpy = idvar
         load(usefile)
         # might overwrite the id variable, so put it back
         # idvar must be specified in the prediction phase, but with a usefile, a previously specified
         # variable could be used if not overwridden by a newer specification.
-        if (is.null(idvar)) {
-            idvar = idvarcpy
-        }
-        if (dopred && is.null(idvar)) {
-            warns$warn(gtxt("An id variable must be specified if making predictions"), dostop=TRUE)
-        }
-        
-        ###save(restree, estdate, ncases, file="c:/temp/estdate.rdata")   #dbg
+
         if (!exists("restree")) {
             warns$warn(gtxtf("The specified file does not contain a tree model: %s",
                              usefile), dostop=TRUE)
@@ -272,6 +291,13 @@ docitree<-function(idvar=NULL, depvars=NULL, indvars=NULL, regrvars=NULL,factorm
     } else {
         filesource = "-- Workspace --"
     }
+
+    if (is.null(idvar)) {
+        idvar = idvarcpy
+    }
+    if (dopred && is.null(idvar)) {
+        warns$warn(gtxt("An id variable must be specified if making predictions"), dostop=TRUE)
+    }
     if (!exists("restree") && !doest) {
         warns$warn(gtxt("No model is estimated or loaded from a file"), dostop=TRUE)
     }
@@ -280,7 +306,11 @@ docitree<-function(idvar=NULL, depvars=NULL, indvars=NULL, regrvars=NULL,factorm
         warns$warn(gtxt("Regression variables are only for model-based recursive partitioning (MOB) models"), dostop=TRUE)
     }
     
-
+    # mob models do not support multiple cores on Windows
+    # unclear about ctree models, but ctree does not raise error
+    if (modeltype != "ctree" && Sys.info()['sysname'] == "Windows") {
+        cores = 1
+    }
     spsspkg.StartProcedure(gtxt("Conditional Inference Trees"),"STATS CITREE")
     
     # correct variable name case, including the id variable, if any
@@ -298,14 +328,44 @@ docitree<-function(idvar=NULL, depvars=NULL, indvars=NULL, regrvars=NULL,factorm
     if (nsplitvars > 0) {
         warns$warn(gtxt("Split files is not supported by this procedure"), dostop=TRUE)
     }
+    if (length(intersect(depvars, union(indvars, regrvars))) > 0) {
+        warns$warn(gtxt("at least one dependent variable appears in the independent or regression variable list"),
+            dostop=TRUE)
+        }
+    nodata = length(depvars) == 0
+
+    # missingValueToNA is set to FALSE so that sysmis can be distinguished from user missing
+    # It is useful for trees to be able to exclude cases with sysmis but retain user missing
+    # as valid for analytical purposes
     
-    if (is.null(idvar)) {
-        dta = spssdata.GetDataFromSPSS(allvars, missingValueToNA=TRUE, factorMode=factormode,
-                keepUserMissing=keepusermissing)
-    } else {
-        dta = spssdata.GetDataFromSPSS(allvars, row.label=unlist(idvar), missingValueToNA=TRUE, 
-            factorMode=factormode, keepUserMissing=keepusermissing)
-    }
+    # The argument missingValueToNA specifies whether missing values of numeric 
+    # variables are converted to the R NA value. The default is FALSE, 
+    # which specifies that missing values
+    # (system and user) of numeric variables are converted to the R NaN.
+    # Categorical variables get the NA value (if those cases are kept).
+    # It appears that factors always get NA.
+    
+    # factorMode doc: The value "levels"
+    # specifies that categorical variables are converted to factors whose levels are the values that occur in the
+    # data. The value "labels" specifies that categorical variables are converted to factors whose levels are
+    # the value labels of the variables. Values in the data for which value labels do not exist have a level equal
+    # to the value itself. Value labels whose associated value does not occur in the data are included as empty
+    # factor levels.
+    # The levels of the resulting R factor are always sorted in ascending order of the data
+    # values, even when factorMode="labels".
+    tryCatch(
+        {if (is.null(idvar)) {
+            dta = spssdata.GetDataFromSPSS(allvars, missingValueToNA=TRUE, factorMode=factormode,
+                    keepUserMissing=FALSE)
+        } else {
+            dta = spssdata.GetDataFromSPSS(allvars, row.label=unlist(idvar), missingValueToNA=TRUE, 
+                factorMode=factormode, keepUserMissing=FALSE)
+        }
+        }, error=function(e) {warns$warn(paste(gtxt("error fetching data"), e, sep="\n"), dostop=TRUE)}
+    )
+    # remove missing values from scale or all variables
+    dta = cleannaf(dta, missingvalues, factormode, warns)   # needed or not?
+    
     for (v in depvars) {
         if ((modeltype == "moblinear" || modeltype == "moblogit") && is.factor(dta[[v]])) {
             warns$warn("Categorical dependent variables cannot be used with moblinear or moblogit models",
@@ -317,23 +377,42 @@ docitree<-function(idvar=NULL, depvars=NULL, indvars=NULL, regrvars=NULL,factorm
         wts = NULL
         ncases = nrow(dta)
     } else {
-        wts = dta[[weightvar]]
-        ncases = sum(dta[weightvar])
+        if (is.factor(dta[[weightvar]])) {
+            warns$warn(gtxt("The weight variable must have a scale measurement level to use this procedure."),
+                dostop=TRUE)
+        }
+        tryCatch({
+            wts = dta[[weightvar]]
+            ncases = sum(dta[weightvar])
+        },
+        error = function(e) {
+            print(e)
+            wts = NULL
+            ncases = nrow(dta)
+            warns$warn(gtxt("Model was estimated with case weights, but dataset is not
+currently weighted or the weight variable is invalid. Ignoring weight"), dostop=FALSE)
+        }
+        )
     }
 
-    caption = gtxtf("Computed by R partykit package, version %s, ctree, and mob", packageVersion("partykit"))
+    caption = gtxtf("Computed by the R partykit package, version %s", packageVersion("partykit"))
     depvarsplus = paste(depvars, collapse="+")
     indvarsplus = paste(indvars, collapse="+")
     regrvarsplus = paste(regrvars, collapse="+")
 
 
     if (doest) {
+        if (length(depvars) == 0 || length(indvars) == 0) {
+            warns$warn(gtxt("Dependent or independent variable specification missing"), dostop=TRUE)
+        }
         f = paste(depvarsplus, indvarsplus, sep="~", collapse="")
         if (!is.null(regrvars)) {
             f = paste(f, regrvarsplus, sep="|")
         }
+
         frml = as.formula(f)
         # control type depends on ctree vs MOB
+
         if (modeltype == "ctree") {
             controls = ctree_control(
                 teststat = teststat,
@@ -345,7 +424,9 @@ docitree<-function(idvar=NULL, depvars=NULL, indvars=NULL, regrvars=NULL,factorm
                 minbucket = minbucket,
                 minprob = minprob,
                 maxsurrogate=maxsurrogate,
-                maxdepth = maxdepth
+                maxdepth = maxdepth,
+                multiway = multiway,
+                cores = cores
             )
             ctreecontrols = controls
             mobcontrols = NULL
@@ -356,7 +437,8 @@ docitree<-function(idvar=NULL, depvars=NULL, indvars=NULL, regrvars=NULL,factorm
             #controls = list(
             mlis = list(formula=frml,  data=dta, weights=wts,
                 alpha=alpha, bonferroni = bonferroni, maxdepth = maxdepth,
-                minsize=minsize, trim=trim, prune=prune, ordinal = ordinal)
+                minsize=minsize, trim=trim, prune=prune, ordinal = ordinal,
+                catsplit=ifelse(multiway, "multiway", "binary"))
             controls = mob_control(
                 alpha = alpha, 
                 bonferroni = bonferroni,
@@ -364,7 +446,8 @@ docitree<-function(idvar=NULL, depvars=NULL, indvars=NULL, regrvars=NULL,factorm
                 minsize = minsize,
                 trim = trim,
                 prune = prune,
-                ordinal = ordinal
+                ordinal = ordinal,
+                catsplit = ifelse(multiway, "multiway", "binary")
             )
             mobcontrols = controls
             ctreecontrols = NULL
@@ -372,25 +455,27 @@ docitree<-function(idvar=NULL, depvars=NULL, indvars=NULL, regrvars=NULL,factorm
         }
 
         if (modeltype == "ctree") {
-            func = ctree
+            func = "ctree"
             args = list(frml, control = controls, data = dta, weights=wts)
 
         } else if (modeltype == "moblinear") {
-            func = lmtree
-            #save(controls, file="c:/temp/controls.rdata")
+            func = "lmtree"
             ###args =  (list(formula=frml, data = dta, weights=wts, control=controls))
             args = mlis
         } else {  #logit
-            func = glmtree
-            args = c(list(formula=frml, data = dta, weights=wts, family="binomial"), 
-                control=controls)
+            func = "glmtree"
+            args = mlis
+            # args = c(list(formula=frml, data = dta, weights=wts, family="binomial"), 
+            #     control=controls)
         }
         ###tryCatch({if (exists("restree")) {rm(restree)}}, error=function(e) {})
         restree = NULL
         rm(restree)
-        #print(control)
-        restree = do.call(func, args = args)
-
+        tryCatch({
+            restree = do.call(func, args = args)
+        }, error=function(e) {
+            warns$warn(paste(gtxt("error estimating tree"), e, sep="\n"), dostop=TRUE)}
+        )
         filesource="workspace"  # estimates are in the workspace
         estdate = date()
         if (!exists('ctreecontrol')) {ctreecontrol = NULL}
@@ -401,16 +486,31 @@ docitree<-function(idvar=NULL, depvars=NULL, indvars=NULL, regrvars=NULL,factorm
             }
             # and maybe a file, too
             save(restree, estdate, modeltype, frml, depvars, indvars, regrvars, idvar, ctreecontrols,
-                 mobcontrols, keepusermissing,
+                 mobcontrols, missingvalues, factormode,
             file=modelfile)
         }
+        # save a temporary copy of the workspace after deleting the previous one if present
+        if (!is.null(wscopy)) {
+            tryCatch({
+                if (file.exists(wscopy)) {
+                    file.remove(wscopy)
+                }
+            },
+            error = function(e) {NULL}
+            )
+        }
+        wscopy = tempfile("workspacecopy", tmpdir=tempdir(), fileext=".rdata")
+        save(restree, estdate, modeltype, frml, depvars, indvars, regrvars, idvar, ctreecontrols,
+             mobcontrols, missingvalues, factormode,
+             file=wscopy)
+        options(SPSSCITREE=wscopy)
     }
     if (!exists("restree")) {
         warns$warn(gtxt("There is no tree from estimation or a model file"), dostop=TRUE)
     }
 
     displayparameters(restree, modeltype, ctreecontrols, mobcontrols, depvars, indvars, regrvars, 
-        factormode, idvar, filesource, estdate, modelfile, ncases, keepusermissing, maxsurrogate, caption,
+        factormode, idvar, filesource, estdate, modelfile, ncases, missingvalues, maxsurrogate, caption,
         alpha, bonferroni, prune, ordinal)
     
     
@@ -429,14 +529,16 @@ docitree<-function(idvar=NULL, depvars=NULL, indvars=NULL, regrvars=NULL,factorm
             }
         }
     }
-    
-    if (confusion) {
-        displayconfusion(restree, depvars[[1]], dta, factormode, weightvar)
+    if (confusion && !nodata) {
+        displayconfusion(restree, depvars[[1]], dta, factormode, weightvar, missingvalues)
     }
-    if (termstats) {
-        mktermstatstable(restree, depvars, weightvar)
+    if (termstats && !nodata) {
+        mktermstatstable(restree, dta, depvars, weightvar, nodepaths)
     }
-    if (sctests) {
+    # if (nodepaths && !nodata) {
+    #     pathrules(restree)
+    # }
+    if (sctests && !nodata) {
         sctable(restree)
     }
     plotfiles = list()
@@ -452,9 +554,11 @@ docitree<-function(idvar=NULL, depvars=NULL, indvars=NULL, regrvars=NULL,factorm
         if (t == 0) {   # trees up to the zeroth will get plotted
             break
         }
-        plotfile = displayplot(restree, t, mainheight, mainwidth, subheight, subwidth,
-            fontsize, innerplots, is.factor(dta[[1]]))
-        plotfiles = append(plotfiles, plotfile)  # for file cleanup later
+        dvfactor = is.factor(dta[[depvars[[1]]]])
+        thisplotfile = displayplot(restree, dvfactor, t, mainheight, mainwidth, subheight, subwidth,
+            fontsize, innerplots, depvars, 
+            terminalplots, plotfile, plotformat, plotbg, matchbg, modeltype)
+        plotfiles = append(plotfiles, thisplotfile)  # for file cleanup later
     }
 
 
@@ -476,9 +580,9 @@ docitree<-function(idvar=NULL, depvars=NULL, indvars=NULL, regrvars=NULL,factorm
         close(f)
         
         outlinelabel = sprintf("Variables: %s.  Chart ", paste(depvars, collapse=" "))
-        labelparm = sprintf("'%s'", paste(treestoplot, collapse=" "))
+        labelparm = sprintf("%s", paste(treestoplot, collapse=" "))
         hidelog = ifelse(length(treestoprint) > 0, "YES", "NO") 
-        cmd = sprintf("STATS INSERT CHART CHART='%s' HEADER='Tree' OUTLINELABEL='%s' OUTLINEPARM = %s HIDELOG=%s", 
+        cmd = sprintf("STATS INSERT CHART CHARTLIST='%s' HEADER='Tree' OUTLINELABEL='%s ' LABELPARM = %s HIDELOG=%s", 
             pfilelist, outlinelabel, labelparm, hidelog)
         # for (c in 1:length(plotfiles)) {
         #     labelnumber = c  
@@ -490,12 +594,13 @@ docitree<-function(idvar=NULL, depvars=NULL, indvars=NULL, regrvars=NULL,factorm
     }
     # Due to a bug in the TextBlock api, tree output may be duplicated in a log block
     # HIDELOG will hide the most recent log block in the Viewer
-    if (length(treestoprint) > 0) {
-        spsspkg.Submit("STATS INSERT CHART HIDELOG=YES.")
-    }
+    # if (length(treestoprint) > 0) {
+    #     spsspkg.Submit("STATS INSERT CHART HIDELOG=YES.")
+    # }
 
     if (dopred) {
-        makedataset(dta, datasetname, depvars, factormode, idvar, restree, predtype, quantiles, warns)
+        makedataset(dta, datasetname, depvars, factormode, idvar, restree, predtype, 
+            quantiles, missingvalues, modeltype, warns)
     }
     
     
@@ -527,7 +632,7 @@ ttcorrect = function(testtype, warns) {
 
 
 displayparameters = function(restree, modeltype, ccontrols, mcontrols, depvars, indvars, regrvars, factormode, idvar, filesource, 
-    estdate, modelfile, ncases, keepusermissing, maxsurrogate, caption,
+    estdate, modelfile, ncases, missingvalues, maxsurrogate, caption,
     alpha, bonferroni, prune, ordinal) {
     # display parameters and input statistics
 
@@ -544,7 +649,7 @@ displayparameters = function(restree, modeltype, ccontrols, mcontrols, depvars, 
         gtxt("Source File"),
         gtxt("Estimation Date"),
         gtxt("Saved Model File"),
-        gtxt("Keep User Missing"),
+        gtxt("User Missing Values"),
         
         gtxt("Test Statistic"),
         gtxt("Split Statistic"),
@@ -569,7 +674,7 @@ displayparameters = function(restree, modeltype, ccontrols, mcontrols, depvars, 
         dl(filesource),
         estdate,
         dl(modelfile, gtxt("--not saved--")),
-        ifelse(keepusermissing, gtxt("treat as valid"), gtxt("treat as missing")),
+        ifelse(missingvalues=="include", gtxt("include"), gtxt("exclude")),
         paste(ccontrols["teststat"], collapse=", "),
         paste(ccontrols["splitstat"], collapse=", "),
         paste(ccontrols["testtype"], collapse=", "),
@@ -595,7 +700,7 @@ displayparameters = function(restree, modeltype, ccontrols, mcontrols, depvars, 
             gtxt("Source File"),
             gtxt("Estimation Date"),
             gtxt("Saved Model File"),
-            gtxt("Keep User Missing"),
+            gtxt("User Missing Values"),
             
             gtxt("Alpha"),
             gtxt("Bonferroni"),
@@ -619,7 +724,7 @@ displayparameters = function(restree, modeltype, ccontrols, mcontrols, depvars, 
             dl(filesource),
             estdate,
             dl(modelfile, gtxt("--not saved--")),
-            ifelse(keepusermissing, gtxt("treat as valid"), gtxt("treat as missing")),
+            ifelse(missingvalues == "include", gtxt("include"), gtxt("exclude")),
             mcontrols[["alpha"]],
             ifelse(mcontrols[["bonferroni"]], gtxt("yes"), gtxt("no")),
             mcontrols[["maxdepth"]],
@@ -664,13 +769,14 @@ displaytree = function(result, t) {
     if (t == 1) {
         block = capture.output(print(result))
     } else {
-        block = capture.output(print(result[1]))
+        block = capture.output(print(result[t]))
     }
     
     block = paste(block, collapse="\n")
     textBlock = spss.TextBlock(sprintf("Conditional Inference Tree %s", t),
         block)
 }
+
 
 sctable = function(tree) {
     # display pivot table of the structural test statistics and p values
@@ -679,28 +785,32 @@ sctable = function(tree) {
     
     scdf = NULL
     sc = sctest(tree)
-    for (i in 1:length(sc)) {
-        df = t(data.frame(sc[i]))
-        if (length(df) == 0) {
-            next
+    if (!is.null(sc)) {
+        for (i in 1:length(sc)) {
+            df = t(data.frame(sc[i]))
+            if (length(df) == 0) {
+                next
+            }
+            scdf = rbind(scdf, df)
         }
-        scdf = rbind(scdf, df)
+        # change Xdigits row names to read "node digits"
+        rn = gsub("^X(\\d+)", "node \\1", row.names(scdf))
+        row.names(scdf) = rn
+        scnames = names(sc)
+        spsspivottable.Display(scdf, title=gtxt("Structural Tests"), templateName="treetests",
+                               caption="Computed by R strucchange, ctree, mob packages",
+                               hiderowdimtitle=TRUE, hidecoldimtitle=TRUE)
     }
-    # change Xdigits row names to read "node digits"
-    rn = gsub("^X(\\d+)", "node \\1", row.names(scdf))
-    row.names(scdf) = rn
-    scnames = names(sc)
-    spsspivottable.Display(scdf, title=gtxt("Structural Tests"), templateName="treetests",
-                           caption="Computed by R strucchange, ctree, mob packages",
-                           hiderowdimtitle=TRUE, hidecoldimtitle=TRUE)
 }
 
 
-displayplot = function(result, tree, mainheight, mainwidth, subheight, subwidth, 
-    fontsize, innerplots, dvfactor) {
+displayplot = function(result, dvfactor, tree, mainheight, mainwidth, subheight, subwidth, 
+    fontsize, innerplots, depvars, 
+    terminalplots, plotfile, plotformat, plotbg, matchbg, modeltype) {
     # display a tree plot
     # tree is the list of trees to display
     # result is the ctree output
+    # dvfactor is TRUE if depvarw are factors
     # mainheight, mainwidth are the size parameters for tree #1
     # subheight and subwidth are the size parameters for other trees
     # innerplots is TRUE if inner nodes should be plotted
@@ -733,24 +843,152 @@ displayplot = function(result, tree, mainheight, mainwidth, subheight, subwidth,
     }
 
     pfile = tempfile("treeplot", tmpdir=tempdir(), fileext=paste(tree,".png", sep=""))
-    png(pfile, units="in", res=72, height=height, width=width)
+    tryCatch(
+        png(pfile, units="in", res=72, height=height, width=width, bg=plotbg),
+        error = function(e) {warns$warn(e, dostop=TRUE)}
+    )
+    # cex.main=2 does not work here
+    if (dvfactor) {
+        innertype = node_barplot
+    } else { 
+        innertype = node_boxplot
+    }
+    innercolor = ifelse(matchbg, plotbg, "white")
+    lwd = ifelse(fontsize < 10, 1, 2)
+    drawtheplot(result, tree, fontsize, depvars, lwd, plotbg, innercolor, terminalplots, innerplots, 
+        innertype, modeltype)
+    # tryCatch(
+    #     {
+    #     if (terminalplots) {
+    #         if (!innerplots) {
+    #             plot(result[tree], gp = gpar(fontsize = fontsize, lwd=lwd), 
+    #              main=paste(depvars, collapse =", "), bg=plotbg, tp_args=list(bg=plotbg))
+    #         } else {
+    #             plot(result[tree], gp = gpar(fontsize = fontsize, lwd=lwd), 
+    #                  inner_panel=innertype(result[tree], bg=innercolor),
+    #                  main=paste(depvars, collapse =", "), bg=plotbg, tp_args=list(bg=plotbg))
+    #         }
+    #     }
+    #     else {
+    #         if (!innerplots) {
+    #         plot(result[tree], gp = gpar(fontsize = fontsize, lwd=lwd), 
+    #             main=paste(depvars, collapse =", "), terminal_panel = node_id, 
+    #             bg=plotbg, tnex = 1)
+    #         } else {
+    #             plot(result[tree], gp = gpar(fontsize = fontsize, lwd=lwd), 
+    #                  main=paste(depvars, collapse =", "), terminal_panel = node_id, 
+    #                  inner_panel=innertype(result[tree], bg=innercolor),
+    #                  bg=plotbg, tnex = 1)
+    #         }
+    #     }
+    #     },
+    #     error = function(e) {print(e)
+    #         warns$warn(gtxt("Incomplete plot due to terminal node issue"), dostop=FALSE)
+    #         }
+    #     )
+    # dev.off()
+    
+    if (!is.null(plotfile)) {
+        plotformat = toupper(plotformat)
+        # build filepath for plot including plot number
+        fp = sub("\\.[^.]*?$", "", plotfile, ignore.case=TRUE)
+        fp = paste(fp, tree, ".", toupper(plotformat), sep="")
 
-    if (!innerplots) {
-        plot(result[tree], gp = gpar(fontsize = fontsize))
-    } else {
-        if (dvfactor) {
-            plot(result[tree], inner_panel=node_barplot, gp = gpar(fontsize = fontsize))
-        } else {
-            plot(result[tree], inner_panel=node_boxplot, gp = gpar(fontsize = fontsize))
-        }
-    } 
-    dev.off()
+        tryCatch(
+            {
+            if (plotformat == "PDF") {
+                pdf.options(height=height, width=width, pointsize=fontsize)
+                pdf(file=fp, height=height, width=width, bg=plotbg)
+            } else if (plotformat == "SVG") {
+                svg(filename=fp, width=width, height=height, pointsize=fontsize, 
+                    bg=plotbg)
+            } else {
+                png(file=fp, units="in", res=72, height=height, width=width, bg=plotbg)
+            }
+            # plot(result[tree], gp = gpar(pointsize = fontsize,
+            #     height=height, width=width, pointsize=fontsize), tp_args=list(bg=plotbg),
+            #     main=paste(depvars, collapse =", "))
+            # dev.off()
+            drawtheplot(result, tree, fontsize, depvars, lwd, plotbg, innercolor, terminalplots, 
+                innerplots, innertype, modeltype)
+            warns$warn(gtxtf("Tree plot saved to %s", fp))
+            },
+            error = function(e) {warns$warn(gtxtf("Cannot write to specified file: %s", fp),
+                dostop=FALSE)
+            }
+        )
+    }    
     return(pfile)
 }
 
+drawtheplot = function(result, tree, fontsize, depvars, lwd, plotbg, innercolor, terminalplots, 
+    innerplots, innertype, modeltype) {
+
+    # make interior  and terminal plot backgrounds slightly brighter (except for white)
+    ic = col2rgb(innercolor) / 255 + .05
+    innercolor = rgb(min(ic[1], 1), min(ic[2], 1), min(ic[3], 1))
+
+    # mob models don't appear to support inner plots
+    if (modeltype %in% c("moblinear", "moblogit")) {
+        innerplots=FALSE
+    }
+    ###save(result, tree, fontsize, lwd, modeltype,innercolor, innerplots,plotbg, depvars, innercolor, file="c:/temp/plot.rdata")
+    tryCatch(
+        {
+            if (terminalplots) {
+                if (!innerplots) {
+                    plot(result[tree], gp = gpar(fontsize = fontsize, lwd=lwd), 
+                         main=paste(depvars, collapse =", "), bg=plotbg, tp_args=list(bg=plotbg))
+                         ###main=paste(depvars, collapse =", "), bg=plotbg, tp_args=NULL)
+                } else {
+                    plot(result[tree], gp = gpar(fontsize = fontsize, lwd=lwd), 
+                         inner_panel=innertype(result[tree], bg=innercolor),
+                         main=paste(depvars, collapse =", "), bg=plotbg, tp_args=list(bg=innercolor))
+                }
+            }
+            else {
+                if (!innerplots) {
+                    plot(result[tree], gp = gpar(fontsize = fontsize, lwd=lwd), 
+                         main=paste(depvars, collapse =", "), terminal_panel = node_id, 
+                         bg=plotbg, tnex = 1)
+                } else {
+                    plot(result[tree], gp = gpar(fontsize = fontsize, lwd=lwd), 
+                         main=paste(depvars, collapse =", "), terminal_panel = node_id, 
+                         inner_panel=innertype(result[tree], bg=innercolor),
+                         bg=plotbg, tnex = 1)
+                }
+            }
+        },
+        error = function(e) {print(e)
+            warns$warn(gtxt("Incomplete plot due to terminal node issue"), dostop=FALSE)
+        }
+    )
+    dev.off()
+}
+# code to suppress everything but the node id in terminal nodes
+# This function written by Achim Zeileis
+node_id <- function(node) {
+    id <- format(id_node(node))
+    
+    node_vp <- viewport(x = unit(0.5, "npc"), y = unit(0.5, "npc"),
+                        just = "center", gp = gpar(),
+                        width = unit(1, "strwidth", paste0(" ", id, " ")),
+                        height = unit(1.2, "lines"),
+                        name = paste0("node_terminal", id))
+    pushViewport(node_vp)
+    
+    grid.rect(gp = gpar(fill = "lightgray"))
+    grid.text(x = unit(0.5, "npc"), y = unit(0.5, "npc"), id)
+    
+    upViewport()
+}
+
+###plot(ct, terminal_panel = node_id, tnex = 1)
+
 
 ptypes = list("response", "prob", "node", "quantile")
-makedataset = function(dta, ds, depvars, factormode, idvarname, restree, ptype, quantiles, warns) {
+makedataset = function(dta, ds, depvars, factormode, idvarname, restree, ptype, 
+    quantiles, missingvalues, modeltype, warns) {
     # create new SPSS dataset and populate with predict results
 
     # dta is the data to predict from
@@ -759,8 +997,9 @@ makedataset = function(dta, ds, depvars, factormode, idvarname, restree, ptype, 
     # idvarname is the name of the id variable - guaranteed legal
     # factormode is "levels" or "labels" and controls the predicted response type
     #   for categorical variables
-    # ptype is the type of predicted values to create
+    # ptype is the [list of] types of predicted values to create
     # quantiles is a list of quantiles for that output type as decimal values
+    # missingvalues indicates whether these values have already been excluded
     # warns is the warnings function
     
     # id var values will always appear as type character but not as a factor.
@@ -768,18 +1007,21 @@ makedataset = function(dta, ds, depvars, factormode, idvarname, restree, ptype, 
 
     # generate dataset of predictions of specified type
     
-    if (length(depvars) > 1 && !(ptype %in% c("node", "response", "prob"))) {
-        warns$warn(gtxt("Some prediction typess can only be made for a single dependent variable"),
-            dostop = TRUE)
-    }
+    # if (length(depvars) > 1 && !(ptype %in% c("node", "response", "prob"))) {
+    #     warns$warn(gtxt("Some prediction typess can only be made for a single dependent variable"),
+    #         dostop = TRUE)
+    # }
 
+    if (modeltype != "ctree" && length(depvars) > 1) {
+        warns$warn(gtxt("MOB models can only predict one dependent variable.
+        First variable will be used."), dostop=FALSE)
+        depvars = depvars[1]
+    }
     inputdict = spssdictionary.GetDictionaryFromSPSS(c(idvarname, depvars))
 
     idinfo = inputdict[, inputdict['varName', ] == idvarname]
     depvardict = inputdict[inputdict['varName',] %in% depvars]
-    save(inputdict,  depvardict, depvars, file="c:/temp/depvar.rdata")
     depvartypes = as.integer(depvardict['varType',])
-    depvartype = as.integer(depvardict["varType",])
     iscategoricals = depvardict['varMeasurementLevel',] %in% c("nominal", "ordinal")
     anycategorical = any(depvardict['varMeasurementLevel',] %in% c("nominal", "ordinal"))
     anyscale = any(depvardict['varMeasurementLevel',] %in% c("scale"))
@@ -787,29 +1029,64 @@ makedataset = function(dta, ds, depvars, factormode, idvarname, restree, ptype, 
         warns$warn(gtxt("Cannot combine categorical and scale variables in a prediction",
             dostop=TRUE))
     }
-    if (ptype == "quantile" && anycategorical) {
+    if ("quantile" %in% ptype && anycategorical) {
         warns$warn(gtxt("Quantile predictions are not available for categorical variables"),
                    dostop=TRUE)
     }
-    if (ptype == "prob" && anyscale) {
+    if ("prob" %in%ptype && anyscale) {
         warns$warn(gtxt("Class category predictions are not available for scale variables",
             dostop = TRUE))
     }
 
-    if (ptype != "quantile") {
-        p2 = predict(restree, type=ptype, newdata=dta)
-        preddata = data.frame(predict(restree, type=ptype, newdata=dta))
-    }  
-    else {
-        preddata = data.frame(predict(restree, type=ptype, at=quantiles, newdata=dta))
+    if (modeltype %in% c("moblinear", "moblogit") && 
+        length(setdiff(ptype, list("response", "node")) > 0)) {
+        warns$warn(gtxt('Prediction type for MOB models must be "response" or "node'),
+            dostop=TRUE)
     }
-    if (ptype == "node") {
-        colnames(preddata) = "Node"
+    casecount = nrow(dta)
+    if (missingvalues != "exclude") {
+        dta = cleanna(dta, "exclude")
+        casecountpost = nrow(dta)
+        if (casecount != casecountpost) {
+            warns$warn(gtxtf("%s cases not predicted due to missing data", casecount - casecountpost),
+            dostop=FALSE)
+        }
     }
-    save(depvardict, preddata, ptype, restree, dta, file="c:/temp/pred.rdata")
-    columnnames = fixnames(preddata, ptype)
-    colnames(preddata) = columnnames
+    nonq = intersect("quantile", ptype) > 0
+    pdatasets = c()
+    if ('node' %in% ptype) {
+        preddatanode = data.frame(predict(restree, type="node",
+             newdata=dta, na.action=na.pass))
+        pdatasets = append(pdatasets, "preddatanode")
+    }
     
+    if ('response' %in% ptype) {
+        preddataresponse = data.frame(predict(restree, type='response',
+            newdata=dta, na.action=na.pass))
+        pdatasets = append(pdatasets, "preddataresponse")
+    }
+    
+    if ("prob" %in% ptype) {
+        preddataprob = data.frame(predict(restree, type="prob",
+            newdata=dta, na.action=na.pass))
+        pdatasets = append(pdatasets, "preddataprob")
+        pcolumnnames = fixpnames(dta, colnames(preddataprob), depvars)
+    }
+    
+    if ("quantile" %in% ptype) {
+        if (max(unlist(quantiles)) > 1 || min(unlist(quantiles)) < 0) {
+            warns$warn(gtxt("Quantile not in [0, 1]"), dostop=TRUE)
+        }
+        preddataquantile = data.frame(predict(restree, type="quantile", at=unique(unlist(quantiles)), newdata=dta,
+            na.action=na.pass))
+        # column names are wrong from predict when more than one dv, so correct them
+        qcolumnnames = spread(depvars, quantiles)
+        pdatasets = append(pdatasets, "preddataquantile")
+    }
+
+    allpred = do.call(cbind, sapply(pdatasets, get,
+        envir=sys.frame(sys.parent(0)), simplify=FALSE))
+
     # for factors when using the label data option, response will be a string
     # if it is a factor but using levels, it could be either string or numeric
     # so follow the dependent variable types
@@ -818,125 +1095,274 @@ makedataset = function(dta, ds, depvars, factormode, idvarname, restree, ptype, 
     # the factor of 2 below is probably not needed
     dvtypes = c()
     depvarfmts = c()
+
     for (i in 1:length(depvars)) {
         if (factormode == "labels" && iscategoricals[[i]]) {
-            dvtypes[[i]] = max(nchar(levels(dta[1,i]), type="bytes", allowNA=TRUE)) * 2
+            dvtypes[[i]] = max(nchar(levels(dta[[1,depvars[[i]]]]), type="bytes", allowNA=TRUE)) * 2
+            if (dvtypes[[i]] == 0 || is.null(dvtypes[[i]])) {
+                dvtypes[[i]] = 12   # arbitrary choice.  something haw gone wrong
+            }
         } else if (factormode == "levels" || !iscategoricals[[i]]) {
-            dvtypes[[i]] = depvartypes[[i]]
+            dvtypes[[i]] = depvartypes[[i]]  # declared SPSS type
         } else if (!iscategoricals[i]) {
             dvtypes[i] = depvartypes[[i]]
         }
         
         # numerical result values will be returned in a numeric variable
-        if (typeof(dta[[1,i]]) == "double") {
-            depvarfmts[i] = "F8.2"
+        # numeric and not a factor
+        if (dvtypes[[i]] == 0 && (!iscategoricals[[i]]
+            || factormode == "levels")) {
+            depvarfmts[[i]] = "F8.2"
             width = 0
-        } else {
-            depvarfmts[i] = paste("A", as.character(dvtypes[[i]]), sep="")
-            width = dvtypes[[i]]    # utf-8 expansion?
+            # character coded as levels
+        } else if(dvtypes[[i]] > 0 && factormode == "levels") {
+            depvarfmts[[i]] = paste("A", dvtypes[[i]], sep="")
+            # factor and labels - use widest 
+        } else if (is.factor(dta[[depvars[[i]]]]) && factormode == "labels") {
+            width = dvtypes[[i]]
+            depvarfmts[i] = paste("A", width, sep="")
         }
     }
+
     # name, label, type, format, level
-    ##save(inputdict, restree, dta, depvars, idvarname, file="c:/temp/makedataset.rdata")
     dictlist = list()
     dictlist[[1]] = idinfo
     
     # construct prediction variable dictionary according to prediction type
-    for (i in 1:length(depvars)) {
-        if (ptype == "response") {
-            varspec = c(
-                paste(gtxt("Response"), depvars[[i]], sep="_"),
-                "",
-                as.integer(dvtypes[[i]]), 
-                depvarfmts[i], 
-                "nominal")
-        dictlist[[i+1]] = varspec
-        # only one variable allowed for quantiles
-        } else if (ptype == "quantile") {
-            for (q in 1:length(colnames(preddata))) {
-                varspec = c(paste(paste(gtxt("quantile"), depvars[[i]], sep="_"), 
-                    colnames(preddata)[q], sep=""),
-                    "", 
-                    0, 
-                    "F8.2", 
-                    "scale")
-                dictlist[[q+1]] = varspec
-            }
-            save(preddata, varspec, dictlist, ptype, iscategoricals, file="c:/temp/quantiles.rdata")
-        } else if (ptype == "prob")  {
-            # return df of predicted probabilities for each level of the dv factor
-            # one variable
-            cnames = colnames(preddata)
-            for (p in 1:length(colnames(preddata))) {
-                #varspec = c(paste(columnnames[p], depvars[[i]], sep="_"), 
-                varspec = c(cnames[p],
-                    "", 
-                    0,
-                    "F8.3", 
-                    "scale")
-                dictlist[[p + 1]] = varspec
-            }
-         } else if (ptype == "node") {
-                varspec = c(paste(ptype, "Node", sep="_"), 
-                "",
-                0, 
-                "F8.0", 
-                "nominal")
-            dictlist[[2]] = varspec
-            break
-         }
+    npvar = 2
+    qsaved = FALSE
+    psaved = FALSE
+
+    if ("preddatanode" %in% pdatasets) {
+        varspec = c("Node",
+            "",
+            0, 
+            "F8.0", 
+            "nominal")
+        dictlist[[npvar]] = unlist(varspec)
+        npvar = npvar + 1
+    }
+    
+    for (item in pdatasets) {
+        for (i in 1:length(depvars)) {
+            if (item == "preddataresponse") {# one pred value per dv per case
+                varspec = c(
+                    paste(gtxt("Response"), depvars[[i]], sep="_"),
+                    "",
+                    as.integer(dvtypes[[i]]), 
+                    depvarfmts[i], 
+                    "nominal")
+                dictlist[[npvar]] = unlist(varspec)
+                npvar = npvar + 1
+    
+            } else if (item == "preddataquantile") {  # scale only
+                if (qsaved) {
+                    next
+                }
+                qsaved = TRUE
+                for (q in 1:length(qcolumnnames)) { # k q values per case
+                    ###varspec = c(paste(paste(gtxt("quantile"), depvars[[i]], sep="_"), 
+                    varspec = c(
+                        qcolumnnames[[q]],
+                        "", 
+                        0, 
+                        "F8.3", 
+                        "scale")
+                    dictlist[[npvar]] = unlist(varspec)
+                    npvar = npvar + 1
+                }
+                
+            } else if (item == "preddataprob")  {  # categorical only
+                # return df of predicted probabilities for each level of the dv factor
+                # one variable
+                if (psaved) {
+                    next
+                }
+                psaved = TRUE
+                for (p in 1:length(pcolumnnames)) {
+                    varspec = c(pcolumnnames[p],
+                        "", 
+                        0,
+                        "F8.3", 
+                        "scale")
+                    dictlist[[npvar]] = unlist(varspec)
+                    npvar = npvar + 1
+                }
+                
+             }
+        }
     }
 
+    # add the dependent variables
+    for (i in 1:length(depvars)) {
+        varspec = c(
+            depvars[[i]],
+            "",
+            as.integer(dvtypes[[i]]),
+            depvarfmts[[i]],
+            "nominal")
+        dictlist[[length(dictlist) + 1]] = unlist(varspec)
+    }
+    allnames = c()
+    for (i in 1:length(dictlist)) {
+        allnames[i] = dictlist[[i]][1]
+    }
+
+    preddatanames = fixqnames(allnames, depvars) # ensure no duplicate names
+    allpred = data.frame(row.names(allpred), allpred, dta[unlist(depvars)])
+
+    # update dictionary
+    for (i in 1:length(dictlist)) {
+        dictlist[[i]][1] = preddatanames[[i]]  # ovwriting assigned names :-(
+    }
     dict = spssdictionary.CreateSPSSDictionary(dictlist)
 
-
     tryCatch({
-        save(ds, dict, dictlist, dta, preddata, file="c:/temp/newdataset.Rdata")
         spssdictionary.SetDictionaryToSPSS(ds, dict)
-        thedata = data.frame(row.names(dta), preddata)
-        spssdata.SetDataToSPSS(ds, thedata) #row.names(preddata)?
+        if ('node' %in% ptype) {
+            tryCatch(
+                {
+                paths = unlist(pathrules(restree))
+                tnodes = nodeids(restree, terminal=TRUE)
+                if (length(tnodes) > 0 && max(nchar(paths, type="bytes")) <= 110) {
+                    spssdictionary.SetValueLabel(ds, "Node", tnodes, unlist(paths))
+                }
+            }, error=function(e) {warns$warn(e, dostop=FALSE)}
+            )
+        }
+        spssdata.SetDataToSPSS(ds, allpred) #row.names(preddata)?
         spssdictionary.EndDataStep()
     },
-    error=function(e) {
-        spssdictionary.EndDataStep()
-        warns$warn(gtxtf("Failed to create dataset %s, %s", ds, e),
-                   dostop=FALSE)
-    }
+        error=function(e) {
+            spssdictionary.EndDataStep()
+            warns$warn(gtxtf("Failed to create dataset %s, %s", ds, e),
+                       dostop=FALSE)
+        }
     )
 }
 
-displayconfusion = function(tree, dv, dta, factormode, wts) {
+fixqnames = function(allnames, depvars) {
+    # ensure no duplicate column names.  return all names
+    
+    # allnames is a vector of variable names without depvar names
+    # depvars is the vector of dependent variable names
+    # depvars names that duplicate earlier names will be modified
+    
+    # ensure that names are short enough for SPSS limit
+    nondv = length(allnames) - length(depvars)
+    for (vindex in 1:nondv) {
+        allnames[[vindex]] = substr(allnames[[vindex]], 1, 63)   # could be fooled due to utf-8 bytes vs uicode
+    }
+    
+    # check for duplicate preceding varname
+    # earliest name wins
+    for (vindex in 2:length(allnames)) {
+        basename = allnames[[vindex]]
+        newname = basename
+        for (i in 1:1000) {
+            if (newname %in% allnames[1:(vindex-1)])  {
+                newname = paste(basename, i, sep="_")
+            } else {
+                allnames[[vindex]] = newname
+                break
+            }
+        }
+    }
+    return(allnames)
+}
+fixpnames = function(dta, pnames, depvars) {
+    # return column names for prob prediction
+    
+    # categorical depvars only
+    # pnames is the names generated by predict, type="prob"
+    # depvars is a list of the dependent variable names
+    
+    # if more than one dependent variable is specified, the
+    # predict names are wrong.  For now, guessing the categories
+    # but going with letter codes if that doesn't work
+    
+    if (length(depvars) == 1) {
+        newnames = paste(depvars[[1]], pnames, sep="_")
+    } else {
+        newnames = c()
+        for (dv in depvars) {
+            dvlevels = levels(dta[[dv]])
+            newname = paste(dv, dvlevels, sep="_")
+            newnames = append(newnames, newname)
+        }
+        if (length(newnames) == length(pnames)) {
+            return(newnames)
+        }
+        # if the replacement names differ in length from pnames,
+        # just use letters as we don't know why.
+        
+        # generate repeating sequence of letters of total length = number of names
+        # downstream code will adjust for duplicates in the rare case when > 26
+        newnames = rep_len(LETTERS, length(pnames))
+    }
+    return(newnames)
+    
+}
+
+spread = function(varnames, quantiles) {
+    # return a list of interleaved names: for each item in varnames concatenate it
+    # with all the quantiles
+    
+    newnames = c()
+    
+    for (i in 1:length(varnames)) {
+        for (j in 1:length(quantiles)) {
+            newnames = append(newnames, paste(varnames[[i]], quantiles[[j]], sep="_Q"))
+        }
+    }
+    return(newnames)
+}
+
+displayconfusion = function(tree, dv, dta, factormode, wts, missingvalues) {
     # display confusion tables statistics
     # tree is the estimated tree
     # dv is the name of the (first) dependent variable
     # dta is the data
     # factormode is "levels" or "labels"
     # wts is the name of the weight variable or NULL
-    
+
+    if (is.null(dta)) {
+        warns$warn(gtxt("No data available.  Confusion table omitted."), dostop=FALSE)
+    }
     if (!is.factor(dta[[dv]])) {
         ###warns$warn(gtxt("Confusion tables are only available for categorical variables"))
         return()
     }
-
+    if (missingvalues != "exclude") {
+        dta = cleanna(dta, "exclude")
+    }
     # value labels have a values part and a labels part
     dvlabels = spssdictionary.GetValueLabels(dv)
-    dvpred = predict(tree, newdata=dta)
-    
-    if (is.factor(dta[[dv]]) && !is.factor(dvpred)) {
+    dta = dta[complete.cases(dta),]
+    dvpred = data.frame(predict(tree, newdata=dta, na.action=na.pass))
+    if (is.factor(dta[[dv]]) && !is.factor(dvpred[[1]])) {
         return()
     }
-    
+    if (nrow(dta) != nrow(dvpred)) {
+        warns$warn(gtxt("Confusion table not available due to missing prediction(s)"),
+            dostop=FALSE)
+        return()
+    }
     # In some cases, e.g., moblogistic, the glmtree predictions with regression
     # will be values that are not in the domain of the dependent variable
 
-    # labelled categories will appear even if there are no cases for some labels
     if (is.null(wts)) {
-        concounts = xtabs(~dta[[dv]] + dvpred)
+        concounts = xtabs(~dta[[dv]] + dvpred[[1]])
     } else {
-        concounts = xtabs(dta[[wts]] ~ dta[[dv]] + dvpred)
+        concounts = xtabs(dta[[wts]] ~ dta[[dv]] + dvpred[[1]])
     }
     # map values to value labels (except for the last one)
-
+    for (i in 1:nrow(concounts)) {
+        if (rownames(concounts)[[i]] == "") {rownames(concounts)[[i]] = " "}
+    }
+    for (i in 1:ncol(concounts)) {
+        if (colnames(concounts)[[i]] == "") {colnames(concounts)[[i]] = " "}
+    }
     rows = rownames(concounts)
     cols = colnames(concounts)
     correct = 0
@@ -981,32 +1407,32 @@ displayconfusion = function(tree, dv, dta, factormode, wts) {
         caption = caption)
 }
 
-
+# subpunct approximates characters invalid in SPSS variable names
+subpunct = "[-’‘%&'()*+,/:;<=>?\\^`{|}~’]"
 fixnames = function(dta, ptype) {
-    # return list of legal SPSS variable names for the names in dta
+    # return list of legal, nonduplicative SPSS variable names for the input list
     
-    # dta is the data frame to correct
+    # dta is a list/vector of names to correct
     # this function may not perfectly match SPSS name rules
     
-    newnames = list()
-    for (name in colnames(dta)) {
+    newnames = c()
+    for (name in dta) {
         # avoid the regular grep function!
-        if (ptype == "quantile" && grepl("^%[0-9.].*%$", name)) {  # quantile test
-            newname = paste("Q_", name, sep="")
-            newname = gsub("%", "", newname)
-        } else {
-            newname = gsub("[[:punct:]]", "_", name)   # eliminate punctuation
-            newname = gsub("(^[0-9])", "c_\\1)", newname)  # fix names starting with digit
-            newname = gsub("\\.$", "_", newname)   # fix names ending with "."
-            newname = gsub("^\\.", "_", newname)   # fix names starting with "."
-        }
+        # if (ptype == "quantile" && grepl("^%[0-9.].*%$", name)) {  # quantile test
+        #     newname = paste("Q_", name, sep="")
+        #     newname = gsub("%", "", newname)
+        # } else {
+        newname = gsub(subpunct, "_", name)   # eliminate disallowed characters
+        newname = gsub("(^[0-9])", "c_\\1", newname)  # fix names starting with digit
+        newname = gsub("^\\.|\\.$", "_", newname)  # fix names starting or ending with "."
+    # }
         # ensure that there are no duplicate names
         basename = newname
         for (i in 1:1000) {
             if (!(newname %in% newnames)) {
                 break
             } else {
-                newname = paste(basename, i, sep="")
+                newname = paste(basename, i, sep="_")
             }
         }
         newnames = append(newnames, newname)
@@ -1031,74 +1457,333 @@ Mode <- function(x, wt){
             a = xtabs(wt~x)
         }
         anames = names(a)
-        themax = anames[which.max(a)]
+        themax = c(anames[which.max(a)], a[[which.max(a)]]/sum(a) * 100)
         return(themax)
     }
 }
 
-mktermstatstable = function(tree, depvars, wt) {
+mktermstatstable = function(tree, dta, depvars, wt, nodepaths) {
     # show table of terminal statistics for each dependent variable
+    
     # tree is the estimated tree
+    # dta is the case data (not currently used)
     # depvars is a list of dependent variables
     # wt is the name of the weight variable or NULL
+    # nodepaths indicates whether or not to include a column of node paths
     
     for (dv in depvars) {
         df = terminalstats(tree, dv, wt)
-        dfnames = c(gtxt("Node"), "Number of Cases", 
-            ifelse(is.factor(dta[[dv]]), gtxt("Mode"), gtxt("Mean"))
-        )
-        colnames(df) = dfnames
-        spsspivottable.Display(
-            df, 
-            title=gtxtf("Terminal Node Statistics: %s", dv),
-            outline=gtxt(gtxt("Statistics"),
-            templateName="STATSCITREESTATS"),
-            hiderowdimtitle=TRUE,
-            hidecoldimtitle=TRUE,
-            hiderowdimlabel=TRUE,
-            caption=gtxt("Even if there are multiple modes, only one is shown per node")
-        )
+        if (is.null(df)) {
+            warns$warn(gtxt("Node summary table is not available"), dostop=FALSE)
+            return()
+        }
+        df[[1]] = as.character(df[[1]])
+        if (!is.null(df)) {
+            if (!is.factor(dta[[dv]])) {
+                dfnames = c(gtxt("Node"), gtxt("Number of Cases"), gtxt("Percent of Cases"),
+                    ifelse(is.factor(dta[[dv]]), gtxt("Mode"), gtxt("Mean")))
+            } else {
+                dfnames = c(gtxt("Node"), gtxt("Number of Cases"), gtxt("Percent of Cases"),
+                    ifelse(is.factor(dta[[dv]]), gtxt("Mode")), gtxt("Percent at Mode"))
+            }
+            colnames(df) = dfnames
+            if (nodepaths) {
+                paths = pathrules(tree)
+                df[ncol(df) + 1] = paths
+            }
+            spsspivottable.Display(
+                df, 
+                title=gtxtf("Terminal Node Statistics: %s", dv),
+                outline=gtxt(gtxt("Statistics"),
+                templateName="STATSCITREESTATS"),
+                hiderowdimtitle=TRUE,
+                hidecoldimtitle=TRUE,
+                hiderowdimlabel=TRUE,
+                caption=gtxt("Even if there are multiple modes, only one is shown per node")
+            )
+        }
     }
 }
 
 terminalstats = function(tree, depvar, wt) {
     # make a table of appropriate terminal node statistics
     # mean for scale and mode for categorical
-    # and return two-column data frame
+    # and return four or five-column data frame
     
     #tree is the estimated tree
     #depvar is the name of the dependent variable
     # if the data are unweighted, the weight variable has values 1
     
     thestats = c()
+    thestatsmode = c()
+    thestatspct = c()
     ncases = c()
     tnodes = nodeids(tree, terminal=TRUE)
     nodedata = data_party(tree, tnodes)
-    save(nodedata, file="c:/temp/nodedata.rdata")
+
     # mob models may not have a (weights) variable if unweighted, but ctree models do
     cnames = colnames(nodedata[[1]])
-    hasweights = "(weights)" %in% cnames
-
-    for (n in 1:length(tnodes)) {
-        thevar = nodedata[[n]][[depvar]]
-        if (is.factor(thevar)) {
-            s = Mode(thevar, nodedata[[n]][["(weights)"]])  # NULL if no weight
+    if (!is.null(cnames)) {
+        hasweights = "(weights)" %in% cnames
+        if (length(tnodes > 1)) {
+            for (n in 1:length(tnodes)) {
+                thevar = nodedata[[n]][[depvar]]
+                if (is.factor(thevar)) {
+                    s = Mode(thevar, nodedata[[n]][["(weights)"]])  # NULL if no weight  includes pct at mode
+                    thestatsmode = append(thestatsmode, s[[1]])
+                    thestatspct = append(thestatspct, round(as.numeric(s[[2]]),4))
+                } else {
+                    if (is.null(nodedata[[n]][["(weights)"]])) {
+                        s = mean(thevar)
+                    } else
+                        s = weighted.mean(thevar, w=nodedata[[n]][["(weights)"]])
+                        thestats = append(thestats, s)
+                    }
+                
+                if (hasweights) {
+                    ncases = append(ncases, sum(nodedata[[n]][['(weights)']]))
+                } else {
+                    ncases = append(ncases, nrow(nodedata[[n]]))
+                } 
+            }
+        if (!is.factor(thevar)) {
+            return(data.frame(node=tnodes, ncases=ncases, ncases/sum(ncases) * 100, statistics=thestats))
         } else {
-            if (is.null(nodedata[[n]][["(weights)"]])) {
-                s = mean(thevar)
-            } else
-                s = weighted.mean(thevar, w=nodedata[[n]][["(weights)"]])
+            dff = data.frame(node=tnodes, ncases=ncases, ncases/sum(ncases) * 100, 
+                statisticsm=thestatsmode, statisticsp=thestatspct)
+            return(dff)
         }
-        thestats = append(thestats, s)
-        if (hasweights) {
-            ncases = append(ncases, sum(nodedata[[n]][['(weights)']]))
-        } else {
-            ncases = append(ncases, nrow(nodedata[[n]]))
-        } 
+    } else {
+        return(NULL)
     }
-    return(data.frame(node=tnodes, ncases=ncases, statistics=thestats))
+    return(NULL)
+    }
 }    
 
+# get_path <- function(object) {
+#     ## list of kids per node (NULL if terminal)
+#     kids <- lapply(as.list(object$node), "[[", "kids")
+#     
+#     ## recursively add node IDs of children
+#     add_ids <- function(x) {
+#         ki <- kids[[x[1L]]]
+#         if(is.null(ki)) {
+#             return(list(x))
+#         } else {
+#             x <- lapply(ki, "c", x)
+#             return(do.call("c", lapply(x, add_ids)))
+#         }
+#     }
+#     add_ids(1L)
+# }
+
+#regex = '([^ ]+) %in% c\\('
+#repl = "ANY(\\1,"
+
+f = function(s) {gsub('([^ ]+) %in% c\\(', 'ANY(\\1,', s)}
+killNA = function(s) {gsub(', "NA"', '', s)}
+
+# not used as partykit:::.list.rules.party does not work with factors :-(
+# fixed in partykit update
+pathrules <- function(tree, ...)
+    # display table listing terminal rules
+{
+    ## coerce to "party" object if necessary
+    if(!inherits(tree, "party")) tree <- as.party(tree)
+    
+    ## get standard predictions (response/prob) and collect in data frame
+    ###rval <- data.frame(response = predict(object, type = "response", ...))
+    ###rval$prob <- predict(object, type = "prob", ...)
+    
+    ## get rules for each node
+    rls <- partykit:::.list.rules.party(tree)
+    rls = lapply(rls, killNA)
+    trules = data.frame(unlist(rls))  # need unlist or get just one row
+    ###save(rls, tree, trules, file="c:/temp/rls.rdata")
+    tt = data.frame()
+    for (i in 1:nrow(trules)) {
+        tt[i, 1] = simppath(trules[i, 1])}  # try to simplify
+    tt = data.frame(lapply(tt, f))  # convert to SPSS syntax
+    colnames(tt)[[1]] = gtxt("Node Path")
+    return(tt)
+}
+
+
+simppath = function(path) {
+    # simplify and return the path
+    
+    # path is a string of path-defining segments each as a string of varname, op, criterion
+    # with " & " as the separator
+    
+    pathcopy = path
+    path = strsplit(path, " & ")
+    path = unique(path[[1]])
+    numsegs = length(path)
+    newpath = list()
+    
+    # for each segment, if it is already in the newlist, discard
+    # if it is more restrictive than an existing newlist item, replace
+    # otherwise, append
+    if (numsegs == 0) {
+        return(pathcopy)
+    }
+    for (p in 1:numsegs) {
+        seg = path[[p]]   # varname, operator, criteria
+        seg1 = strsplit(seg, " ")[[1]]
+        # in case there are blanks in the third element, which is a list of categories, put the
+        # extra elements back
+        if (length(seg1) > 3) {
+            seg1[[3]] = paste(seg1[3:length(seg1)], collapse=" ")
+            seg1 = seg1[1:3]
+        }
+        keep = TRUE
+        replaceit = FALSE
+        # see if exact or stronger version already included
+        for (n in 1:length(newpath)) {
+            if (length(newpath) == 0) {
+                break
+            }
+            item = newpath[[n]]
+            if (item == seg) {  #   seg might have been modified before adding
+                keep = FALSE
+                break
+            }
+            item1 = strsplit(item, " ")[[1]]
+            if (item1[[1]] != seg1[[1]]) { # different variable
+                next
+            }
+            # stronger condition of same type and scale variable?
+            ###if ((seg1[[2]] %in% c("<", "<=") && seg1[[2]] == item1[[2]] && seg1[[3]] < item1[[3]]) ||
+            ###    (seg1[[2]] %in% c(">", ">=") && seg1[[2]] == item1[[2]] && seg1[[3]] > item1[[3]])) {
+            if (seg1[[2]] %in% c("<", "<=", ">", ">=") && seg1[[2]] == item1[[2]] && 
+                 comp(seg1[[3]], item1[[3]], seg1[[2]])) {
+                replaceit = TRUE
+                break
+            } else if (seg1[[2]] == "%in%") {
+                cats1 = gsub("c\\((.+?))", "\\1", seg1[[3]])   # more restrictive?
+                cats1 = strsplit(cats1, ",")
+                cats2 = gsub("c\\((.+?))", "\\1", item1[[3]])
+                cats2 = strsplit(cats2, ",")
+                # could be fooled, but damage limited to not pruning
+                if (length(setdiff(cats1, cats2)) == 0) {
+                    keep = FALSE
+                    break
+                } else {
+                    replaceit = TRUE
+                    break
+                }
+            }
+        }
+        if (keep) {
+            if (replaceit) {  # never TRUE if newpath is empty
+                newpath[[n]] = seg
+            } else {
+                newpath[[length(newpath)+ 1]] = seg
+            }
+        }
+    }
+    
+    newpath = unique(newpath)
+    return(paste(newpath, collapse = " & "))
+}
+
+
+comp = function(x, y, op) {
+    # compare x and y as numeric if possible else as strings
+    # op is the comparison operator to use
+    
+    f = match.fun(op)
+    suppressWarnings({
+        xx = as.numeric(x)
+        yy = as.numeric(y)
+        if (is.na(xx) || is.na(yy)) {
+            return(f(x,y))
+        } else {
+            return(f(as.numeric(x), as.numeric(y)))
+        }
+    }
+    )
+}
+
+
+# Vignettes on CRAN
+viglist = list(partykit="https://cran.r-project.org/web/packages/partykit/vignettes/partykit.pdf",
+               ctree="https://cran.r-project.org/web/packages/partykit/vignettes/ctree.pdf",
+               mob="https://cran.r-project.org/web/packages/partykit/vignettes/mob.pdf")
+
+displayvignettes = function(vignettelist) {
+    # display selected R vignettes
+    
+    if (!is.null(vignettelist)) {
+        if ("dialoghelp" %in% vignettelist || "syntaxhelp" %in% vignettelist) {
+            helploc = paste(getextloc(), "STATS_CITREE", sep="/")
+        }
+        for (v in vignettelist) {
+            if (v == "dialoghelp") {
+                browseURL(paste(helploc, "stats_cit.pdf", sep="/"))
+            } else if (v == "syntaxhelp") {
+                browseURL(paste(helploc, "markdown.html", sep="/"))
+            } else {
+                if (v %in% names(viglist)) {
+                    #browseURL(viglist[[v]], "?target=\"_blank\"")
+                    browseURL(paste(viglist[[v]], sep=""))
+            } else {
+                warns$warn(gtxtf("The specified vignette, %s, is not available", v))
+            }
+        }
+        warns$warn("End of procedure", dostop=TRUE)
+    }
+    }
+}
+
+rmnan = function(ddf) {
+    # remove NaN value rows from a data frame and return it
+    
+    # ddf is a data frame to process
+ 
+       nanrows = c()
+    for (r in 1:nrow(ddf)) {
+        nanrows[r] = !any(sapply(ddf[r,], is.nan))
+    }
+    return(ddf[nanrows,])
+}
+
+
+cleannaf = function(dta, missinghandling, factorMode, warns) {
+    # remove missing cases and empty factor levels
+    # stop if any variable has more than 30 levels
+    # return dta as per missinghandling and factorMode
+    
+    # the weight variable might be in the variable list, but it can't
+    # be a factor, so it would have 0 levels
+    
+    if (missinghandling == "exclude") {
+        # remove all rows with any variable missing (NA or NaN)
+        dta = dta[complete.cases(dta),]
+    } else {
+        # remove cases with any scale variables missing
+        dta = dta[complete.cases(Filter(Negate(is.factor), dta)),]
+    }
+    
+    # in "labels" mode, GetDataFromSPSS creates empty factor levels
+    # for unused value labels.  Get rid of those.
+    if (factorMode == "labels") {
+        dta = droplevels(dta)
+    }
+    cc = c()
+    cn = colnames(dta)
+    levelcounts = sapply(dta, nlevels)
+    for (v in 1:length(cn)) {
+        if (levelcounts[[v]] > 30) {
+            cc = append(cc, cn[[v]])
+        }
+    }
+    if (length(cc) > 0) {
+        warns$warn(gtxtf("Categorical variables cannot have more than 30 categories: %s",
+            paste(cc, collapse=" ")), dostop=TRUE)
+    }
+    return(dta)
+}
 
 setuplocalization = function(domain) {
     # find and bind translation file names
@@ -1116,9 +1801,6 @@ Run<-function(args){
 
     cmdname = args[[1]]
     args <- args[[2]]
-    # print("submitting")
-    # spsspkg.Submit("STATS INSERT CHART HIDELOG=YES")
-    # stop()
 
     # variable keywords are typed as varname instead of existingvarlist in
     # order to allow for case correction of names later, since the data fetching apis are
@@ -1139,9 +1821,6 @@ Run<-function(args){
         spsspkg.Template("USEWORKSPACE", "", ktype="bool", var="useworkspace", islist=FALSE),
         spsspkg.Template("USEFILE", "", ktype="literal", var="usefile", islist=FALSE),
                 
-        spsspkg.Template("LABELS", subc="OUTPUT", ktype="bool", var="labels",
-            vallist=list(0), islist=FALSE),
-        
         spsspkg.Template("TREES", subc="DISPLAY", ktype="str", var="treestoprint", islist=TRUE),
         spsspkg.Template("CONFUSION", subc="DISPLAY", ktype="bool", var="confusion", islist=FALSE), 
         spsspkg.Template("PLOTS", subc="DISPLAY", ktype="int", var="treestoplot", islist=TRUE),
@@ -1150,20 +1829,28 @@ Run<-function(args){
         spsspkg.Template("SUBHEIGHT", subc="DISPLAY", ktype="float", var="subheight", islist=FALSE),
         spsspkg.Template("SUBWIDTH", subc="DISPLAY", ktype="float", var="subwidth", islist=FALSE),
         spsspkg.Template("FONTSIZE", subc="DISPLAY", ktype="float", var="fontsize", islist=FALSE),
+        spsspkg.Template("PLOTFILE", subc="DISPLAY", ktype="literal", var="plotfile", islist=FALSE),
+        spsspkg.Template("PLOTFORMAT", subc="DISPLAY", ktype="str", var="plotformat", 
+                         vallist=list("png", "svg", "pdf"), islist=FALSE),
+        spsspkg.Template("PLOTBG", subc="DISPLAY", ktype="str", var="plotbg", islist=FALSE),
         spsspkg.Template("SCTESTS", subc="DISPLAY", ktype="bool", var="sctests", islist=FALSE),
         spsspkg.Template("INNERPLOTS", subc="DISPLAY", ktype="bool", var="innerplots", islist=FALSE),
+        spsspkg.Template("MATCHBG", subc="DISPLAY", ktype="bool", var="matchbg", islist=FALSE),
         spsspkg.Template("TERMSTATS", subc="DISPLAY", ktype="bool", var="termstats", islist=FALSE),
+        spsspkg.Template("NODEPATHS", subc="DISPLAY", ktype="bool", var="nodepaths", islist=FALSE),
+        spsspkg.Template("TERMINALPLOTS", subc="DISPLAY", ktype="bool", var="terminalplots", islist=FALSE),
         
         spsspkg.Template("MODELFILE", subc="SAVE", ktype="literal", var="modelfile", islist=FALSE),
         spsspkg.Template("DATASET", subc="SAVE", ktype="varname", var="datasetname"), 
         spsspkg.Template("PREDTYPE", subc="SAVE", ktype="str", var="predtype",
-            vallist=list("response", "prob", "quantile", "node"), islist=FALSE),
+            vallist=list("response", "prob", "quantile", "node"), islist=TRUE),
         spsspkg.Template("QUANTILES", subc="SAVE", ktype="float", var="quantiles", islist=TRUE),
         spsspkg.Template("IGNORETHIS", subc="SAVE", ktype="bool", var="ignorethis"),
         
-        spsspkg.Template("KEEPUSERMISSING", subc="OPTIONS", ktype="bool", var="keepusermissing",
-              islist=FALSE),
-        spsspkg.Template("TESTSTAT", subc="OPTIONS", ktype="str", var="teststat"),
+        spsspkg.Template("MISSINGVALUES", subc="OPTIONS", ktype="str", var="missingvalues",
+              vallist=list("exclude", "include"), islist=FALSE),
+        spsspkg.Template("TESTSTAT", subc="OPTIONS", ktype="str", var="teststat",
+            vallist=list("quadratic", "maximum")),
         spsspkg.Template("TESTTYPE", subc="OPTIONS", ktype="str", var="testtype",
             vallist=list("bonferroni", "montecarlo", "univariate", "teststatistic"), islist=TRUE),
         spsspkg.Template("SPLITSTAT", subc="OPTIONS", ktype="str", var="splitstat",
@@ -1192,6 +1879,9 @@ Run<-function(args){
             vallist=list("chisq", "max","l2"),  islist=FALSE),
        spsspkg.Template("MINSIZE", subc="OPTIONS", ktype="int", var="minsize",
                         islist=FALSE),
+       spsspkg.Template("MULTIWAY", subc="OPTIONS", ktype="bool", 
+            var="multiway", islist=FALSE),
+       spsspkg.Template("CORES", subc="OPTIONS", ktype="int", var="cores"),
        
        spsspkg.Template("VIGNETTELIST", subc="VIGNETTE", ktype="literal", var="vignettelist",
             islist=TRUE)
