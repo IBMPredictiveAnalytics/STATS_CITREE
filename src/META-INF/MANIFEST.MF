@@ -11,7 +11,7 @@ Description: This procedure calculates and displays conditional infere
   and plots are available, and the tree can be used for predictions
 Author: Jon K. Peck
 Version: 1.0.0
-Product-Version: 27
+Product-Version: 31
 Date: 01/12/2025
 Categories: tree statistics classification regression
 Plugins: Python,R
