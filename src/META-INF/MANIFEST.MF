@@ -4,7 +4,7 @@ Dialog-Specs: citree.cfe
 Command-Specs: STATS_CITREE.XML,STATS_INSERT_CHART.XML
 Code-Files: STATS_INSERT_CHART.py,STATS_CITREE.R
 Misc-Files: stats_cit.docx,extsyntax.css,stats_cit.pdf,defaultdialogic
- on.png,LICENSE,markdown.html
+ on.png,LICENSE,markdown.html,stats_cit.html
 Summary: Conditional inference and regression trees
 Description: This procedure calculates and displays conditional infere
  nce and model-based classification and regression trees.  Tree tables
