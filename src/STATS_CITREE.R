@@ -6,7 +6,7 @@
 
 # history
 # Dec-2024    Initial version
-# Jan-12-2025 Initial release
+# apr-02-2025 Initial release
 
 
 # helpers
@@ -1216,29 +1216,112 @@ makedataset = function(dta, ds, depvars, factormode, idvarname, restree, ptype,
         dictlist[[i]][1] = preddatanames[[i]]  # ovwriting assigned names :-(
     }
     dict = spssdictionary.CreateSPSSDictionary(dictlist)
+    # 
+    # tryCatch({
+    #     spssdictionary.SetDictionaryToSPSS(ds, dict)
+    #     if ('node' %in% ptype) {
+    #         tryCatch(
+    #             {
+    #             paths = unlist(pathrules(restree))
+    #             tnodes = nodeids(restree, terminal=TRUE)
+    #             if (length(tnodes) > 0 && max(nchar(paths, type="bytes")) <= 110) {
+    #                 spssdictionary.SetValueLabel(ds, "Node", tnodes, unlist(paths))
+    #             }
+    #         }, error=function(e) {warns$warn(e, dostop=FALSE)}
+    #         )
+    #     }
+    #     spssdata.SetDataToSPSS(ds, allpred) #row.names(preddata)?
+    #     spssdictionary.EndDataStep()
+    #},
+    #     error=function(e) {
+    #         spssdictionary.EndDataStep()
+    #         warns$warn(gtxtf("Failed to create dataset %s, %s", ds, e),
+    #                    dostop=FALSE)
+    #     }
+    # )
+    # use csv transfer instead of data/dictionary apis for major performance reasons
+    csvtospss(ds, dict, allpred)
 
-    tryCatch({
-        spssdictionary.SetDictionaryToSPSS(ds, dict)
-        if ('node' %in% ptype) {
-            tryCatch(
-                {
-                paths = unlist(pathrules(restree))
-                tnodes = nodeids(restree, terminal=TRUE)
-                if (length(tnodes) > 0 && max(nchar(paths, type="bytes")) <= 110) {
-                    spssdictionary.SetValueLabel(ds, "Node", tnodes, unlist(paths))
-                }
-            }, error=function(e) {warns$warn(e, dostop=FALSE)}
-            )
+    # not used. value labels get much too long
+    # if ('node' %in% ptype) {
+    #     tryCatch(
+    #         {
+    #         paths = smartquote(unlist(pathrules(restree)))
+    #         tnodes = nodeids(restree, terminal=TRUE)
+    #         if (length(tnodes) > 0 && max(nchar(paths, type="bytes")) <= 110) {
+    #             # make value label list
+    #             vls = unlist(c(rbind(tnodes, unlist(paths), "\n")))
+    #             cmd = sprintf("VALUE LABELS Node %s", vls)
+    #         }
+    #     }, error=function(e) {warns$warn(e, dostop=FALSE)}
+    #     )
+    # }
+}
+
+smartquote = function(s) {
+    # return smartquoted s in double quotes
+    
+    s = sub('"', '""', s)
+    return(paste('"', s, '"', sep=""))
+}
+
+csvtospss = function(preddataset, dict, preds) {
+    # save a temporary csv file and read into SPSS
+    # preddataset is the datgaset name for the prediction data
+    # activedatset is the name of the active dataset
+    # dict is the spss dictionary object for the prediction data
+    # preds is the data
+    
+    csvfile = tempfile("csvpred", tmpdir=tempdir(), fileext=".csv")
+    write.csv(preds, file=csvfile, row.names=FALSE)
+    spsscmd = sprintf('
+        PRESERVE.
+        SET DECIMAL DOT.
+        GET DATA  /TYPE=TXT
+        /FILE="%s"
+        /ENCODING="UTF8"
+        /DELCASE=LINE
+        /DELIMITERS=","
+        /QUALIFIER=""""
+        /ARRANGEMENT=DELIMITED
+        /FIRSTCASE=2
+        /VARIABLES=', csvfile)
+    
+    varspecs = list()
+    for (v in 1:ncol(dict)) {
+        if (!strsplit(dict[["varFormat", v]], "\\d+") %in% c('A', 'F')) {
+            dict[["varFormat", v]] = "F"
         }
-        spssdata.SetDataToSPSS(ds, allpred) #row.names(preddata)?
-        spssdictionary.EndDataStep()
-    },
-        error=function(e) {
-            spssdictionary.EndDataStep()
-            warns$warn(gtxtf("Failed to create dataset %s, %s", ds, e),
-                       dostop=FALSE)
-        }
-    )
+    }
+    for (v in 1:ncol(dict)) {
+        varspecs = append(varspecs, paste(dict[["varName", v]], dict[["varFormat", v]], sep=" "))
+    }
+    varspecs = paste(varspecs, collapse="\n")
+    activedataset = getactivedsname()
+    cmd = paste(spsscmd, varspecs, ".\n", sprintf("dataset name %s.", preddataset), collapse="\n")
+    spsspkg.Submit(cmd)
+    spsspkg.Submit("RESTORE.")
+    spsspkg.Submit(sprintf("DATASET ACTIVATE %s.", activedataset))
+    # Can't delete the file - permission denied
+    # tryCatch(
+    #     {
+    #     file.remove(csvfile)
+    #     }, error = function(e) {warns$warn(paste(gtxtf("Temporary file could not be deleted: %s", csvfile),
+    #             e, collapse="\n"), dostop=FALSE)}
+    # )
+}
+
+getactivedsname = function() {
+    # There is no api for this
+    
+    ds = spssdata.GetOpenedDataSetList()
+    spsspkg.Submit("DATASET NAME X44074_60093_.")  # renames active dataset
+    ds2 = spssdata.GetOpenedDataSetList()
+    diff = setdiff(ds, ds2)  # find out which one changed
+    spsspkg.Submit("DATASET ACTIVATE X44074_60093_.")  # reactivate the previously active one
+    cmd = sprintf("DATASET NAME %s.", diff)   # and give it back its name
+    spsspkg.Submit(cmd)
+    return(diff)
 }
 
 fixqnames = function(allnames, depvars) {

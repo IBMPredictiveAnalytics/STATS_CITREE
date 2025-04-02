@@ -3,6 +3,7 @@
 # history
 # 13-Nov-2024  Original vesion
 # 09-Dec-2024  Update to handle multiple charts on one call via a file of names
+# 11-Mar-2025  handle no LABELPARM case
 
 # Author: Jon K. Peck
 
@@ -65,6 +66,8 @@ def doinsertcharts(chartlist=None, header=None, outlinelabel=None, labelparm=Non
         # Create a new chart item
         if labelparm:
             lbl = outlinelabel + str(labelparm[position])
+        else:
+            lbl = outlinelabel
         outitem = doc.CreateImageChartItem(chart,f"{lbl}")
         # Append the new item to the header item
         headerItem.InsertChildItem(outitem, position)
