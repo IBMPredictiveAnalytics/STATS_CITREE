@@ -47,7 +47,7 @@
 		<Parameter Name="SUBWIDTH" ParameterType="Number"/>
 		<Parameter Name="FONTSIZE" ParameterType="Number"/>
 		<Parameter Name="INNERPLOTS" ParameterType="Keyword"/>
-		<Parameter Name="INNERCOLOR" ParameterType="Keyword"/>
+		<Parameter Name="MATCHBG" ParameterType="Keyword"/>
 		<Parameter Name="PLOTFILE" ParameterType="OutputFile"/>
 		<Parameter Name="PLOTFORMAT" ParameterType="Keyword"/>
 		<Parameter Name="PLOTBG" ParameterType="Keyword"/>
