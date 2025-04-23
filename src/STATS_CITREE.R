@@ -6,7 +6,7 @@
 
 # history
 # Dec-2024    Initial version
-# apr-02-2025 Initial release
+# apr-19-2025 Initial release
 
 
 # helpers
@@ -97,7 +97,7 @@ Warn = function(procname, omsid) {
             procok = inproc
             if (!inproc) {
                 procok =tryCatch({
-                    StartProcedure(lcl$procname, lcl$omsid)
+                    spsspkg.StartProcedure(lcl$procname, lcl$omsid)
                     procok = TRUE
                 },
                 error = function(e) {
@@ -529,6 +529,8 @@ currently weighted or the weight variable is invalid. Ignoring weight"), dostop=
             }
         }
     }
+    varimptbl(restree, modeltype)
+    
     if (confusion && !nodata) {
         displayconfusion(restree, depvars[[1]], dta, factormode, weightvar, missingvalues)
     }
@@ -778,6 +780,21 @@ displaytree = function(result, t) {
 }
 
 
+varimptbl = function(tree, modeltype) {
+    # display model importance table for tree if modeltype==ctree
+    
+    if (modeltype != "ctree") {
+        return()
+    }
+    vtbl = varimp(tree)
+    vtbl = vtbl[order(vtbl, decreasing=TRUE)]
+    spsspivottable.Display(vtbl, title=gtxt("Variable Importance"), 
+            templateName="treevarimp", coldim=gtxt("Importance"),
+            rowdim=gtxt("Variable"), collabels=gtxt("Log Likelihood"),
+             hiderowdimtitle=FALSE, hidecoldimtitle=FALSE)
+}
+
+
 sctable = function(tree) {
     # display pivot table of the structural test statistics and p values
     
@@ -857,36 +874,6 @@ displayplot = function(result, dvfactor, tree, mainheight, mainwidth, subheight,
     lwd = ifelse(fontsize < 10, 1, 2)
     drawtheplot(result, tree, fontsize, depvars, lwd, plotbg, innercolor, terminalplots, innerplots, 
         innertype, modeltype)
-    # tryCatch(
-    #     {
-    #     if (terminalplots) {
-    #         if (!innerplots) {
-    #             plot(result[tree], gp = gpar(fontsize = fontsize, lwd=lwd), 
-    #              main=paste(depvars, collapse =", "), bg=plotbg, tp_args=list(bg=plotbg))
-    #         } else {
-    #             plot(result[tree], gp = gpar(fontsize = fontsize, lwd=lwd), 
-    #                  inner_panel=innertype(result[tree], bg=innercolor),
-    #                  main=paste(depvars, collapse =", "), bg=plotbg, tp_args=list(bg=plotbg))
-    #         }
-    #     }
-    #     else {
-    #         if (!innerplots) {
-    #         plot(result[tree], gp = gpar(fontsize = fontsize, lwd=lwd), 
-    #             main=paste(depvars, collapse =", "), terminal_panel = node_id, 
-    #             bg=plotbg, tnex = 1)
-    #         } else {
-    #             plot(result[tree], gp = gpar(fontsize = fontsize, lwd=lwd), 
-    #                  main=paste(depvars, collapse =", "), terminal_panel = node_id, 
-    #                  inner_panel=innertype(result[tree], bg=innercolor),
-    #                  bg=plotbg, tnex = 1)
-    #         }
-    #     }
-    #     },
-    #     error = function(e) {print(e)
-    #         warns$warn(gtxt("Incomplete plot due to terminal node issue"), dostop=FALSE)
-    #         }
-    #     )
-    # dev.off()
     
     if (!is.null(plotfile)) {
         plotformat = toupper(plotformat)
@@ -932,7 +919,7 @@ drawtheplot = function(result, tree, fontsize, depvars, lwd, plotbg, innercolor,
     if (modeltype %in% c("moblinear", "moblogit")) {
         innerplots=FALSE
     }
-    ###save(result, tree, fontsize, lwd, modeltype,innercolor, innerplots,plotbg, depvars, innercolor, file="c:/temp/plot.rdata")
+
     tryCatch(
         {
             if (terminalplots) {
@@ -1216,29 +1203,7 @@ makedataset = function(dta, ds, depvars, factormode, idvarname, restree, ptype,
         dictlist[[i]][1] = preddatanames[[i]]  # ovwriting assigned names :-(
     }
     dict = spssdictionary.CreateSPSSDictionary(dictlist)
-    # 
-    # tryCatch({
-    #     spssdictionary.SetDictionaryToSPSS(ds, dict)
-    #     if ('node' %in% ptype) {
-    #         tryCatch(
-    #             {
-    #             paths = unlist(pathrules(restree))
-    #             tnodes = nodeids(restree, terminal=TRUE)
-    #             if (length(tnodes) > 0 && max(nchar(paths, type="bytes")) <= 110) {
-    #                 spssdictionary.SetValueLabel(ds, "Node", tnodes, unlist(paths))
-    #             }
-    #         }, error=function(e) {warns$warn(e, dostop=FALSE)}
-    #         )
-    #     }
-    #     spssdata.SetDataToSPSS(ds, allpred) #row.names(preddata)?
-    #     spssdictionary.EndDataStep()
-    #},
-    #     error=function(e) {
-    #         spssdictionary.EndDataStep()
-    #         warns$warn(gtxtf("Failed to create dataset %s, %s", ds, e),
-    #                    dostop=FALSE)
-    #     }
-    # )
+
     # use csv transfer instead of data/dictionary apis for major performance reasons
     csvtospss(ds, dict, allpred)
 
@@ -1302,6 +1267,9 @@ csvtospss = function(preddataset, dict, preds) {
     spsspkg.Submit(cmd)
     spsspkg.Submit("RESTORE.")
     spsspkg.Submit(sprintf("DATASET ACTIVATE %s.", activedataset))
+    spsspkg.Submit("EXECUTE")
+    unlink(csvfile)
+    
     # Can't delete the file - permission denied
     # tryCatch(
     #     {
@@ -1339,11 +1307,15 @@ fixqnames = function(allnames, depvars) {
     
     # check for duplicate preceding varname
     # earliest name wins
+
+    # regular names are already case corrected, but generated names might
+    # match differently cased var names
+    allnameslower = sapply(allnames, tolower)
     for (vindex in 2:length(allnames)) {
         basename = allnames[[vindex]]
         newname = basename
         for (i in 1:1000) {
-            if (newname %in% allnames[1:(vindex-1)])  {
+            if (tolower(newname) %in% allnames[1:(vindex-1)])  {
                 newname = paste(basename, i, sep="_")
             } else {
                 allnames[[vindex]] = newname
