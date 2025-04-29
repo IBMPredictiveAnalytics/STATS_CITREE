@@ -1,4 +1,5 @@
 Name: STATS_CITREE
+Display-Name: Conditional Inference Trees
 Dialog-Specs: citree.cfe
 Command-Specs: STATS_CITREE.XML,STATS_INSERT_CHART.XML
 Code-Files: STATS_INSERT_CHART.py,STATS_CITREE.R
