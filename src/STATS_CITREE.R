@@ -640,7 +640,7 @@ displayparameters = function(restree, modeltype, ccontrols, mcontrols, depvars, 
 
     if (modeltype == "ctree") {
     labels = list(
-        gtxt("Dependent Variatbles"),
+        gtxt("Dependent Variables"),
         gtxt("Independent Variables"),
         gtxt("Factor Mode"),
         gtxt("Id Variable"),
