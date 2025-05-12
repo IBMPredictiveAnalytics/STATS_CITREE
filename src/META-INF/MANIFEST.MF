@@ -17,4 +17,3 @@ Categories: tree statistics classification regression
 Plugins: Python,R
 Python-Version: 3
 R-Packages: mob,partykit,vcd,libcoin,strucchange
-Translation-Catalogues: 
