@@ -209,6 +209,9 @@ docitree<-function(idvar=NULL, depvars=NULL, indvars=NULL, regrvars=NULL,factorm
     if (!is.null(vignettelist)) {
         displayvignettes(vignettelist)
     }
+    if (!spsspkg.IsUTF8mode()) {
+        warns$warn(gtxt("This procedure requires SPSS to be in Unicode mode"), dostop=TRUE)
+    }
     doest = estimate
     dopred = predict
     # If a temporary workspace copy has been saved, and not estimating or 
@@ -324,6 +327,17 @@ docitree<-function(idvar=NULL, depvars=NULL, indvars=NULL, regrvars=NULL,factorm
         regrvars = casecorrect(regrvars, warns)
     }
     allvars = c(depvars, indvars, regrvars, weightvar)  # get data api requires case match
+    # check for valid names in R
+    tryCatch(
+        {
+            for (ch in allvars) {
+                xxx = str2lang(ch)
+            }
+        },
+        error = function(e) {warns$warn(gtxtf("%s is not a valid R variable name.  Please rename it", ch),
+                                        dostop=TRUE)}
+    )
+    
     nsplitvars = length(spssdata.GetSplitVariableNames())
     if (nsplitvars > 0) {
         warns$warn(gtxt("Split files is not supported by this procedure"), dostop=TRUE)
@@ -580,18 +594,31 @@ currently weighted or the weight variable is invalid. Ignoring weight"), dostop=
             writeLines(line, f)
         }
         close(f)
-        
-        outlinelabel = sprintf("Variables: %s.  Chart ", paste(depvars, collapse=" "))
+
+        outlinelabel = sprintf("Variable: %s.  Chart  ", paste(depvars, collapse=" "))
+        ###outlinelabel = sprintf("Dependent Variable: [%s] Chart  ", paste(1:length(depvars), collapse=" "))
         labelparm = sprintf("%s", paste(treestoplot, collapse=" "))
         hidelog = ifelse(length(treestoprint) > 0, "YES", "NO") 
-        cmd = sprintf("STATS INSERT CHART CHARTLIST='%s' HEADER='Tree' OUTLINELABEL='%s ' LABELPARM = %s HIDELOG=%s", 
-            pfilelist, outlinelabel, labelparm, hidelog)
-        # for (c in 1:length(plotfiles)) {
-        #     labelnumber = c  
-        #     outlinelabel = sprintf("Variable: %s.  Chart %s", depvars, treestoplot[c])
-        #     # Submit api is supposed to supply command terminator but doesn't
-        #     cmd = sprintf("STATS INSERT CHART CHART='%s' POSITION=%s, HEADER='Tree', OUTLINELABEL='%s %s'.", plotfiles[c], c - 1, outlinelabel)
-        spsspkg.Submit(cmd)
+        cmd = c("* Encoding: UTF-8.",
+            sprintf("STATS INSERT CHART HIDELOG=%s LABELPARM = %s", hidelog, labelparm),
+            sprintf("CHARTLIST='%s'", pfilelist), 
+            "HEADER='Tree'", 
+            sprintf("OUTLINELABEL='%s '", outlinelabel)
+        )
+        syntemp = tempfile("synplt", tmpdir=tempdir(), fileext=".sps")
+        writeLines(cmd, con=syntemp, useBytes=TRUE)
+
+        # STATS INSERT CHART's xml file is not read on first invocation after installation
+        tryCatch(
+            {
+            spsspkg.Submit(sprintf("INSERT FILE='%s' ENCODING='UTF8'", syntemp))
+            unlink(syntemp)
+            },
+            error = function(e) {
+                print(e)
+                print("Please restart SPSS Statistics to complete installation of this command")
+            }
+        )
 
     }
     # Due to a bug in the TextBlock api, tree output may be duplicated in a log block
@@ -781,17 +808,23 @@ displaytree = function(result, t) {
 
 
 varimptbl = function(tree, modeltype) {
-    # display model importance table for tree if modeltype==ctree
+    # display model importance table for tree if modeltype is ctree
     
     if (modeltype != "ctree") {
         return()
     }
-    vtbl = varimp(tree)
-    vtbl = vtbl[order(vtbl, decreasing=TRUE)]
-    spsspivottable.Display(vtbl, title=gtxt("Variable Importance"), 
-            templateName="treevarimp", coldim=gtxt("Importance"),
-            rowdim=gtxt("Variable"), collabels=gtxt("Log Likelihood"),
-             hiderowdimtitle=FALSE, hidecoldimtitle=FALSE)
+
+    tryCatch(
+        {
+        vtbl = varimp(tree)
+        vtbl = vtbl[order(vtbl, decreasing=TRUE)]
+        spsspivottable.Display(vtbl, title=gtxt("Variable Importance"), 
+                templateName="treevarimp", coldim=gtxt("Importance"),
+                rowdim=gtxt("Variable"), collabels=gtxt("Log Likelihood"),
+                 hiderowdimtitle=FALSE, hidecoldimtitle=FALSE)
+        }, error = function(e) {warns$warn(gtxt("Variable importance table is not available"), 
+            dostop=FALSE)}
+    )
 }
 
 
@@ -814,7 +847,7 @@ sctable = function(tree) {
         rn = gsub("^X(\\d+)", "node \\1", row.names(scdf))
         row.names(scdf) = rn
         scnames = names(sc)
-        spsspivottable.Display(scdf, title=gtxt("Structural Tests"), templateName="treetests",
+        spsspivottable.Display(scdf, title=gtxt("Structural Tests"), templateName="TREETESTS",
                                caption="Computed by R strucchange, ctree, mob packages",
                                hiderowdimtitle=TRUE, hidecoldimtitle=TRUE)
     }
@@ -1031,14 +1064,14 @@ makedataset = function(dta, ds, depvars, factormode, idvarname, restree, ptype,
             dostop=TRUE)
     }
     casecount = nrow(dta)
-    if (missingvalues != "exclude") {
-        dta = cleanna(dta, "exclude")
-        casecountpost = nrow(dta)
-        if (casecount != casecountpost) {
-            warns$warn(gtxtf("%s cases not predicted due to missing data", casecount - casecountpost),
-            dostop=FALSE)
-        }
+    ###if (missingvalues != "exclude") {
+    dta = cleannaf(dta, "exclude", factormode, warns)
+    casecountpost = nrow(dta)
+    if (casecount != casecountpost) {
+        warns$warn(gtxtf("%s cases not predicted due to missing data", casecount - casecountpost),
+        dostop=FALSE)
     }
+    ###}
     nonq = intersect("quantile", ptype) > 0
     pdatasets = c()
     if ('node' %in% ptype) {
@@ -1237,9 +1270,14 @@ csvtospss = function(preddataset, dict, preds) {
     # dict is the spss dictionary object for the prediction data
     # preds is the data
     
+    # due to locale and encoding issues, we can't use a simple Submit
+    # to do the Submit, so a temporary file with forced
+    # encoding setting and INSERT is used
+    
     csvfile = tempfile("csvpred", tmpdir=tempdir(), fileext=".csv")
     write.csv(preds, file=csvfile, row.names=FALSE)
     spsscmd = sprintf('
+* Encoding: UTF-8.
         PRESERVE.
         SET DECIMAL DOT.
         GET DATA  /TYPE=TXT
@@ -1264,19 +1302,14 @@ csvtospss = function(preddataset, dict, preds) {
     varspecs = paste(varspecs, collapse="\n")
     activedataset = getactivedsname()
     cmd = paste(spsscmd, varspecs, ".\n", sprintf("dataset name %s.", preddataset), collapse="\n")
-    spsspkg.Submit(cmd)
+    syntemp = tempfile("csvsyn", tmpdir=tempdir(), fileext=".sps")
+    writeLines(cmd, con=syntemp, useBytes=TRUE)
+    spsspkg.Submit(sprintf("INSERT FILE='%s' ENCODING='UTF8'", syntemp))
     spsspkg.Submit("RESTORE.")
     spsspkg.Submit(sprintf("DATASET ACTIVATE %s.", activedataset))
     spsspkg.Submit("EXECUTE")
     unlink(csvfile)
-    
-    # Can't delete the file - permission denied
-    # tryCatch(
-    #     {
-    #     file.remove(csvfile)
-    #     }, error = function(e) {warns$warn(paste(gtxtf("Temporary file could not be deleted: %s", csvfile),
-    #             e, collapse="\n"), dostop=FALSE)}
-    # )
+    unlink(syntemp)
 }
 
 getactivedsname = function() {
@@ -1388,9 +1421,9 @@ displayconfusion = function(tree, dv, dta, factormode, wts, missingvalues) {
         ###warns$warn(gtxt("Confusion tables are only available for categorical variables"))
         return()
     }
-    if (missingvalues != "exclude") {
-        dta = cleanna(dta, "exclude")
-    }
+    ###if (missingvalues != "exclude") {
+    dta = cleannaf(dta, "exclude", factormode, warns)
+    ###}
     # value labels have a values part and a labels part
     dvlabels = spssdictionary.GetValueLabels(dv)
     dta = dta[complete.cases(dta),]
@@ -1456,7 +1489,7 @@ displayconfusion = function(tree, dv, dta, factormode, wts, missingvalues) {
         title=gtxtf("Confusion Matrix - %s", dv),
         rowdim = gtxt("Observed"), coldim = gtxt("Predicted"),
         hiderowdimtitle=FALSE, hidecoldimtitle=FALSE,
-        templateName="confusionCounts",
+        templateName="CONFUSIONCOUNTS",
         outline="Confusion Matrix", 
         format=formatSpec.Count,
         caption = caption)
@@ -1543,14 +1576,14 @@ mktermstatstable = function(tree, dta, depvars, wt, nodepaths) {
             }
             colnames(df) = dfnames
             if (nodepaths) {
-                paths = pathrules(tree)
+                paths = pathrules(tree, dta)
                 df[ncol(df) + 1] = paths
             }
             spsspivottable.Display(
                 df, 
                 title=gtxtf("Terminal Node Statistics: %s", dv),
-                outline=gtxt(gtxt("Statistics"),
-                templateName="STATSCITREESTATS"),
+                outline=gtxt("Statistics"),
+                templateName="STATSCITREESTATS",
                 hiderowdimtitle=TRUE,
                 hidecoldimtitle=TRUE,
                 hiderowdimlabel=TRUE,
@@ -1640,12 +1673,12 @@ killNA = function(s) {gsub(', "NA"', '', s)}
 
 # not used as partykit:::.list.rules.party does not work with factors :-(
 # fixed in partykit update
-pathrules <- function(tree, ...)
+pathrules <- function(tree, dta,...)
     # display table listing terminal rules
 {
     ## coerce to "party" object if necessary
     if(!inherits(tree, "party")) tree <- as.party(tree)
-    
+
     ## get standard predictions (response/prob) and collect in data frame
     ###rval <- data.frame(response = predict(object, type = "response", ...))
     ###rval$prob <- predict(object, type = "prob", ...)
@@ -1654,21 +1687,25 @@ pathrules <- function(tree, ...)
     rls <- partykit:::.list.rules.party(tree)
     rls = lapply(rls, killNA)
     trules = data.frame(unlist(rls))  # need unlist or get just one row
-    ###save(rls, tree, trules, file="c:/temp/rls.rdata")
     tt = data.frame()
     for (i in 1:nrow(trules)) {
-        tt[i, 1] = simppath(trules[i, 1])}  # try to simplify
+        tt[i, 1] = simppath(trules[i, 1], dta)}  # try to simplify
     tt = data.frame(lapply(tt, f))  # convert to SPSS syntax
     colnames(tt)[[1]] = gtxt("Node Path")
     return(tt)
 }
 
 
-simppath = function(path) {
+simppath = function(path, dta) {
     # simplify and return the path
     
     # path is a string of path-defining segments each as a string of varname, op, criterion
     # with " & " as the separator
+    # dta is the data frame
+    
+    # This function also corrects the labelling problem with ordinal variables,
+    # which come from the R .list.rules.party function as the ordinal of the value
+    # rather than the value
     
     pathcopy = path
     path = strsplit(path, " & ")
@@ -1682,15 +1719,28 @@ simppath = function(path) {
     if (numsegs == 0) {
         return(pathcopy)
     }
+    # get factor information for any ordinal variables (which have to be numeric)
+    facs = makefacconverter(dta)
+    ###print(facs)
+    
     for (p in 1:numsegs) {
         seg = path[[p]]   # varname, operator, criteria
         seg1 = strsplit(seg, " ")[[1]]
+        v = tolower(seg1[[1]])
+        vals = facs[[v]]
+        if (!is.null(vals)) {
+            for (s in 3:length(seg1)) {
+                seg1[[s]] = vals[[as.integer(seg1[[s]])]]
+            }
+        seg = paste(seg1, collapse=" ")
+        }
         # in case there are blanks in the third element, which is a list of categories, put the
         # extra elements back
         if (length(seg1) > 3) {
             seg1[[3]] = paste(seg1[3:length(seg1)], collapse=" ")
             seg1 = seg1[1:3]
         }
+
         keep = TRUE
         replaceit = FALSE
         # see if exact or stronger version already included
@@ -1740,6 +1790,20 @@ simppath = function(path) {
     
     newpath = unique(newpath)
     return(paste(newpath, collapse = " & "))
+}
+
+
+makefacconverter = function(dta) {
+    # return a lower-cased named list of the ordinal factors in dta
+    
+    facdict = list()
+    dict = spssdictionary.GetDictionaryFromSPSS(names(dta))[c("varName", "varType", "varMeasurementLevel"),]
+    for (v in 1:ncol(dict)) {
+        varname = dict[["varName", v]]
+        if (dict["varMeasurementLevel", v] == "ordinal" && as.integer(dict['varType', v]) == 0)
+            facdict[[tolower(varname)]] = levels(dta[[v]])
+    }
+    return(facdict)
 }
 
 

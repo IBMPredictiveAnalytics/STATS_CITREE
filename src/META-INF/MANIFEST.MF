@@ -1,5 +1,5 @@
 Name: STATS_CITREE
-Display-Name: Conditional Inference Trees
+Display-Name: Conditional Inference Tree
 Dialog-Specs: citree.cfe
 Command-Specs: STATS_CITREE.XML,STATS_INSERT_CHART.XML
 Code-Files: STATS_INSERT_CHART.py,STATS_CITREE.R
@@ -12,7 +12,7 @@ Description: This procedure calculates and displays conditional infere
 Author: Jon K. Peck
 Version: 1.0.0
 Product-Version: 31
-Date: 01/12/2025
+Date: 05/1/2025
 Categories: tree statistics classification regression
 Plugins: Python,R
 Python-Version: 3
