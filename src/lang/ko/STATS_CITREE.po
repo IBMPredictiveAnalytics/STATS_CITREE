@@ -1,0 +1,466 @@
+# /***********************************************************************
+# * Licensed Materials - Property of IBM 
+# *
+# * IBM SPSS Products: Statistics Common
+# *
+# * (C) Copyright IBM Corp. 1989, 2025
+# *
+# * US Government Users Restricted Rights - Use, duplication or disclosure
+# * restricted by GSA ADP Schedule Contract with IBM Corp. 
+# ************************************************************************/
+
+msgid ""
+msgstr ""
+"Project-Id-Version: STATS_CITREE 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-07-09 13:36+0530\n"
+"PO-Revision-Date: 2025-07-09 13:36+0530\n"
+"Last-Translator: \n"
+"Language-Team: ko <ko@example.com>\n"
+"Language: ko\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: STATS_CITREE.R:82
+msgid "End of procedure"
+msgstr "프로시저 끝"
+
+#: STATS_CITREE.R:111
+msgid "Message Number"
+msgstr "메시지 번호"
+
+#: STATS_CITREE.R:145
+#, c-format
+msgid "Invalid variable name!!!: %s"
+msgstr "잘못된 변수 이름입니다!!!: %s"
+
+#: STATS_CITREE.R:174 STATS_CITREE.R:314
+msgid "Conditional Inference Trees"
+msgstr "조건부 추론 트리"
+
+#: STATS_CITREE.R:175
+msgid "Inference Trees Warnings"
+msgstr "추론 트리 경고"
+
+#: STATS_CITREE.R:219
+msgid "No tree is available for use in prediction"
+msgstr "예측에 사용할 수 있는 트리가 없습니다."
+
+#: STATS_CITREE.R:224
+#, c-format
+msgid "workspace restored from %s"
+msgstr "%s에서 복원된 작업공간"
+
+#: STATS_CITREE.R:235
+msgid "Dependent and independent variables must be specified if estimating"
+msgstr "추정할 때는 종속 변수와 독립 변수를 반드시 명시해야 합니다."
+
+#: STATS_CITREE.R:240
+msgid "Cannot specify a model file while action is estimate"
+msgstr "작업이 추정되는 동안 모델 파일을 지정할 수 없습니다."
+
+#: STATS_CITREE.R:249
+msgid "A  model source must be specified"
+msgstr "모델 소스를 지정해야 합니다."
+
+#: STATS_CITREE.R:252
+msgid ""
+"A model file cannot be saved, because no model has been estimated or loaded"
+msgstr "모델이 추정되거나 로드되지 않았기 때문에 모델 파일을 저장할 수 없습니다."
+
+#: STATS_CITREE.R:256
+msgid "A dataset must be specified if making predictions"
+msgstr "데이터 세트를 지정해야 합니다."
+
+#: STATS_CITREE.R:260
+msgid "If predicting, a model source must be specified"
+msgstr "예측을 하는 경우, 모델 소스를 지정해야 합니다."
+
+#: STATS_CITREE.R:266
+msgid ""
+"The prediction dataset specified already exists.  Please close it or choose "
+"a different name"
+msgstr "지정한 예측 데이터 세트가 이미 존재합니다.  닫거나 다른 이름 선택"
+
+#: STATS_CITREE.R:270
+msgid ""
+"The input dataset must have a name if doing predictions.  Please assign one "
+"and rerun the procedure."
+msgstr "예측을 수행하는 경우 입력 데이터 세트에 이름이 있어야 합니다.  하나를 지정하고 프로시저를 다시 실행하십시오."
+
+#: STATS_CITREE.R:286
+#, c-format
+msgid "The specified file does not contain a tree model: %s"
+msgstr "지정된 파일에는 트리 모델이 포함되어 있지 않습니다: %s"
+
+#: STATS_CITREE.R:299
+msgid "An id variable must be specified if making predictions"
+msgstr "예측을 수행할 때는 ID 변수를 지정해야 합니다."
+
+#: STATS_CITREE.R:302
+msgid "No model is estimated or loaded from a file"
+msgstr "모델이 파일에서 추정되거나 로드되지 않습니다."
+
+#: STATS_CITREE.R:306
+msgid ""
+"Regression variables are only for model-based recursive partitioning (MOB) "
+"models"
+msgstr "회귀 변수는 모델 기반 재귀 파티셔닝(MOB) 모델에만 사용됩니다."
+
+#: STATS_CITREE.R:329
+msgid "Split files is not supported by this procedure"
+msgstr "이 프로시저에서는 파일 분할이 지원되지 않습니다."
+
+#: STATS_CITREE.R:332
+msgid ""
+"at least one dependent variable appears in the independent or regression "
+"variable list"
+msgstr "독립 변수 또는 회귀 변수 목록에 하나 이상의 종속 변수가 포함되어 있습니다."
+
+#: STATS_CITREE.R:364
+msgid "error fetching data"
+msgstr "데이터 페치 중 오류 발생"
+
+#: STATS_CITREE.R:381
+msgid ""
+"The weight variable must have a scale measurement level to use this "
+"procedure."
+msgstr "이 절차를 사용하려면 무게 변수는 척도 측정 수준을 가져야 합니다."
+
+#: STATS_CITREE.R:392
+msgid "Model was estimated with case weights, but dataset is not"
+msgstr "모델은 케이스 가중치를 사용하여 추정되었지만 데이터 세트는 그렇지 않습니다."
+
+#: STATS_CITREE.R:398
+#, c-format
+msgid "Computed by the R partykit package, version %s"
+msgstr "R 파티키트 패키지로 계산됨, 버전 %s"
+
+#: STATS_CITREE.R:406
+msgid "Dependent or independent variable specification missing"
+msgstr "종속 변수 또는 독립 변수의 명시가 누락되었습니다."
+
+#: STATS_CITREE.R:477
+msgid "error estimating tree"
+msgstr "오류 추정 트리"
+
+#: STATS_CITREE.R:485
+msgid "There is no model file to save"
+msgstr "저장할 모델 파일이 없습니다"
+
+#: STATS_CITREE.R:509
+msgid "There is no tree from estimation or a model file"
+msgstr "추정치나 모델 파일에서 트리가 없습니다."
+
+#: STATS_CITREE.R:522
+#, c-format
+msgid ""
+"There are only %s trees. Higher numbered nodes requested to print are "
+"ignored "
+msgstr "%s 트리만 있습니다. 노드 번호가 높은 경우 인쇄 요청이 무시됩니다. "
+
+#: STATS_CITREE.R:552
+#, c-format
+msgid ""
+"There are only %s trees. Higher numbered nodes requested to plot are ignored"
+" "
+msgstr "%s 트리만 있습니다. 요청된 플롯에서 번호가 높은 노드는 무시됩니다. "
+
+#: STATS_CITREE.R:629
+msgid "Invalid combination of testtype parameters"
+msgstr "잘못된 테스트 유형 매개변수 조합입니다."
+
+#: STATS_CITREE.R:643
+msgid "Dependent Variatbles"
+msgstr "종속 변수"
+
+#: STATS_CITREE.R:644 STATS_CITREE.R:694
+msgid "Independent Variables"
+msgstr "독립변수"
+
+#: STATS_CITREE.R:645 STATS_CITREE.R:696
+msgid "Factor Mode"
+msgstr "요인 모드"
+
+#: STATS_CITREE.R:646 STATS_CITREE.R:697
+msgid "Id Variable"
+msgstr "ID 변수"
+
+#: STATS_CITREE.R:647
+msgid "model Type"
+msgstr "모델 유형"
+
+#: STATS_CITREE.R:648 STATS_CITREE.R:699 STATS_CITREE.R:1538
+#: STATS_CITREE.R:1541
+msgid "Number of Cases"
+msgstr "케이스 수"
+
+#: STATS_CITREE.R:649 STATS_CITREE.R:700
+msgid "Number of Tree Levels"
+msgstr "트리 레벨 수"
+
+#: STATS_CITREE.R:650 STATS_CITREE.R:701
+msgid "Number of Terminal Nodes"
+msgstr "터미널 노드 수"
+
+#: STATS_CITREE.R:651 STATS_CITREE.R:702
+msgid "Source File"
+msgstr "소스 파일"
+
+#: STATS_CITREE.R:652 STATS_CITREE.R:703
+msgid "Estimation Date"
+msgstr "추정 날짜"
+
+#: STATS_CITREE.R:653 STATS_CITREE.R:704
+msgid "Saved Model File"
+msgstr "저장된 모델 파일"
+
+#: STATS_CITREE.R:654 STATS_CITREE.R:705
+msgid "User Missing Values"
+msgstr "사용자 결측값"
+
+#: STATS_CITREE.R:656
+msgid "Test Statistic"
+msgstr "검정 통계량"
+
+#: STATS_CITREE.R:657
+msgid "Split Statistic"
+msgstr "분할 통계"
+
+#: STATS_CITREE.R:658
+msgid "Test Type"
+msgstr "검정 유형"
+
+#: STATS_CITREE.R:660
+msgid "Log Minimum Criterion"
+msgstr "로그 최소 기준"
+
+#: STATS_CITREE.R:661
+msgid "Minimum Node Cases Allowed"
+msgstr "허용되는 최소 노드 케이스"
+
+#: STATS_CITREE.R:662
+msgid "Minimum Cases in a Terminal Node"
+msgstr "터미널 노드의 최소 사례"
+
+#: STATS_CITREE.R:663
+msgid "Minimum Proportion of Cases For a Terminal Node"
+msgstr "터미널 노드에 대한 케이스의 최소 비율"
+
+#: STATS_CITREE.R:664 STATS_CITREE.R:709
+msgid "Maximum Depth"
+msgstr "최대 깊이"
+
+#: STATS_CITREE.R:665
+msgid "Max Surrogates"
+msgstr "최대 대리인"
+
+#: STATS_CITREE.R:678 STATS_CITREE.R:728
+msgid "--not saved--"
+msgstr "--저장되지 않음--"
+
+#: STATS_CITREE.R:679 STATS_CITREE.R:729
+msgid "include"
+msgstr "include"
+
+#: STATS_CITREE.R:679 STATS_CITREE.R:729
+msgid "exclude"
+msgstr "제외"
+
+#: STATS_CITREE.R:693
+msgid "Dependent Variables"
+msgstr "종속변수"
+
+#: STATS_CITREE.R:695
+msgid "Regression Variables"
+msgstr "회귀 변수"
+
+#: STATS_CITREE.R:698
+msgid "Model Type"
+msgstr "모형 유형"
+
+#: STATS_CITREE.R:707
+msgid "Alpha"
+msgstr "알파"
+
+#: STATS_CITREE.R:708
+msgid "Bonferroni"
+msgstr "Bonferroni"
+
+#: STATS_CITREE.R:710
+msgid "Minimum Node Cases"
+msgstr "최소 노드 케이스"
+
+#: STATS_CITREE.R:711
+msgid "Trimming"
+msgstr "트리밍"
+
+#: STATS_CITREE.R:712
+msgid "Post Pruning"
+msgstr "포스트 프루닝"
+
+#: STATS_CITREE.R:713
+msgid "Testtype for Ordinal Variables"
+msgstr "서수 변수에 대한 테스트 유형"
+
+#: STATS_CITREE.R:714
+msgid "Minimum Node Size Allowed"
+msgstr "허용되는 최소 노드 크기"
+
+#: STATS_CITREE.R:731
+msgid "yes"
+msgstr "예"
+
+#: STATS_CITREE.R:731
+msgid "no"
+msgstr "아니요"
+
+#: STATS_CITREE.R:744 STATS_CITREE.R:745
+msgid "Tree Parameters"
+msgstr "트리 매개변수"
+
+#: STATS_CITREE.R:791
+msgid "Variable Importance"
+msgstr "변수 중요도"
+
+#: STATS_CITREE.R:792
+msgid "Importance"
+msgstr "중요도"
+
+#: STATS_CITREE.R:793
+msgid "Variable"
+msgstr "가변"
+
+#: STATS_CITREE.R:793
+msgid "Log Likelihood"
+msgstr "로그 가능도"
+
+#: STATS_CITREE.R:817
+msgid "Structural Tests"
+msgstr "구조 테스트"
+
+#: STATS_CITREE.R:901
+#, c-format
+msgid "Tree plot saved to %s"
+msgstr "트리 플롯이 저장된 위치: %s"
+
+#: STATS_CITREE.R:903
+#, c-format
+msgid "Cannot write to specified file: %s"
+msgstr "지정한 파일에 쓸 수 없습니다: %s"
+
+#: STATS_CITREE.R:950
+msgid "Incomplete plot due to terminal node issue"
+msgstr "터미널 노드 문제로 인해 플롯이 불완전합니다."
+
+#: STATS_CITREE.R:1016
+msgid "Cannot combine categorical and scale variables in a prediction"
+msgstr "예측에서는 범주형 변수와 척도 변수를 결합할 수 없습니다."
+
+#: STATS_CITREE.R:1020
+msgid "Quantile predictions are not available for categorical variables"
+msgstr "범주형 변수에 대해서는 분위수 예측을 사용할 수 없습니다."
+
+#: STATS_CITREE.R:1024
+msgid "Class category predictions are not available for scale variables"
+msgstr "클래스 범주 예측은 척도 변수에 사용할 수 없습니다."
+
+#: STATS_CITREE.R:1038
+#, c-format
+msgid "%s cases not predicted due to missing data"
+msgstr "%s - 데이터 누락으로 인해 예측되지 않은 케이스 수"
+
+#: STATS_CITREE.R:1065
+msgid "Quantile not in [0, 1]"
+msgstr "분위수가 [0, 1]에 있지 않음"
+
+#: STATS_CITREE.R:1137
+msgid "Response"
+msgstr "응답"
+
+#: STATS_CITREE.R:1385
+msgid "No data available.  Confusion table omitted."
+msgstr "사용 가능한 데이터가 없습니다.  혼동 테이블 생략."
+
+#: STATS_CITREE.R:1402
+msgid "Confusion table not available due to missing prediction(s)"
+msgstr "예측이 누락되어 혼동 테이블을 사용할 수 없습니다."
+
+#: STATS_CITREE.R:1433
+#, c-format
+msgid "Correct: count: %s, Percentage: %s"
+msgstr "정답: 개수: %s, 백분율: %s"
+
+#: STATS_CITREE.R:1444 STATS_CITREE.R:1452
+msgid "Total"
+msgstr "총계"
+
+#: STATS_CITREE.R:1456
+#, c-format
+msgid "Confusion Matrix - %s"
+msgstr "혼동 행렬 - %s"
+
+#: STATS_CITREE.R:1457
+msgid "Observed"
+msgstr "관측빈도"
+
+#: STATS_CITREE.R:1457
+msgid "Predicted"
+msgstr "예측됨"
+
+#: STATS_CITREE.R:1532
+msgid "Node summary table is not available"
+msgstr "노드 요약 테이블을 사용할 수 없습니다."
+
+#: STATS_CITREE.R:1538 STATS_CITREE.R:1541
+msgid "Node"
+msgstr "노드"
+
+#: STATS_CITREE.R:1538 STATS_CITREE.R:1541
+msgid "Percent of Cases"
+msgstr "케이스 중 %"
+
+#: STATS_CITREE.R:1539 STATS_CITREE.R:1542
+msgid "Mode"
+msgstr "최빈값(D)"
+
+#: STATS_CITREE.R:1539
+msgid "Mean"
+msgstr "평균"
+
+#: STATS_CITREE.R:1542
+msgid "Percent at Mode"
+msgstr "모드에서 백분율"
+
+#: STATS_CITREE.R:1551
+#, c-format
+msgid "Terminal Node Statistics: %s"
+msgstr "터미널 노드 통계: %s"
+
+#: STATS_CITREE.R:1552
+msgid "Statistics"
+msgstr "통계"
+
+#: STATS_CITREE.R:1557
+msgid "Even if there are multiple modes, only one is shown per node"
+msgstr "여러 모드가 있더라도 각 노드에는 하나만 표시됩니다."
+
+#: STATS_CITREE.R:1662
+msgid "Node Path"
+msgstr "노드 경로"
+
+#: STATS_CITREE.R:1786
+#, c-format
+msgid "The specified vignette, %s, is not available"
+msgstr "지정된 비네트(%s)는 사용할 수 없습니다."
+
+#: STATS_CITREE.R:1837
+#, c-format
+msgid "Categorical variables cannot have more than 30 categories: %s"
+msgstr "범주형 변수는 30개 이상의 범주를 가질 수 없습니다: %s"
+
+#: STATS_CITREE.R:1003
+msgid "MOB models can only predict one dependent variable."
+msgstr "MOB 모델은 단 하나의 종속 변수만 예측할 수 있습니다."
