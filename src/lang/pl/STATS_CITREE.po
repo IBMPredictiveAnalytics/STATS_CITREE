@@ -1,0 +1,483 @@
+# /***********************************************************************
+# * Licensed Materials - Property of IBM 
+# *
+# * IBM SPSS Products: Statistics Common
+# *
+# * (C) Copyright IBM Corp. 1989, 2025
+# *
+# * US Government Users Restricted Rights - Use, duplication or disclosure
+# * restricted by GSA ADP Schedule Contract with IBM Corp. 
+# ************************************************************************/
+
+msgid ""
+msgstr ""
+"Project-Id-Version: STATS_CITREE 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-07-09 13:36+0530\n"
+"PO-Revision-Date: 2025-07-09 13:36+0530\n"
+"Last-Translator: \n"
+"Language-Team: pl <pl@example.com>\n"
+"Language: pl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: STATS_CITREE.R:82
+msgid "End of procedure"
+msgstr "Koniec procedury"
+
+#: STATS_CITREE.R:111
+msgid "Message Number"
+msgstr "Numer komunikatu"
+
+#: STATS_CITREE.R:145
+#, c-format
+msgid "Invalid variable name!!!: %s"
+msgstr "Niepoprawna nazwa zmiennej: %s"
+
+#: STATS_CITREE.R:174 STATS_CITREE.R:314
+msgid "Conditional Inference Trees"
+msgstr "Drzewa wnioskowania warunkowego"
+
+#: STATS_CITREE.R:175
+msgid "Inference Trees Warnings"
+msgstr "Ostrzeżenia drzew wnioskowania"
+
+#: STATS_CITREE.R:219
+msgid "No tree is available for use in prediction"
+msgstr "Żadne drzewo nie jest dostępne do użycia przy tworzeniu predykcji"
+
+#: STATS_CITREE.R:224
+#, c-format
+msgid "workspace restored from %s"
+msgstr "obszar roboczy został przywrócony z %s"
+
+#: STATS_CITREE.R:235
+msgid "Dependent and independent variables must be specified if estimating"
+msgstr "Podczas szacowania należy określić zmienne zależne i niezależne"
+
+#: STATS_CITREE.R:240
+msgid "Cannot specify a model file while action is estimate"
+msgstr ""
+"Nie można określić pliku modelu podczas wykonywania działania szacowania"
+
+#: STATS_CITREE.R:249
+msgid "A  model source must be specified"
+msgstr "Należy określić źródło modelu"
+
+#: STATS_CITREE.R:252
+msgid ""
+"A model file cannot be saved, because no model has been estimated or loaded"
+msgstr ""
+"Nie można zapisać pliku modelu, ponieważ żaden model nie został oszacowany "
+"albo załadowany"
+
+#: STATS_CITREE.R:256
+msgid "A dataset must be specified if making predictions"
+msgstr "Aby tworzyć predykcje, należy określić zestaw danych"
+
+#: STATS_CITREE.R:260
+msgid "If predicting, a model source must be specified"
+msgstr "W przypadku przewidywania należy określić źródło modelu"
+
+#: STATS_CITREE.R:266
+msgid ""
+"The prediction dataset specified already exists.  Please close it or choose "
+"a different name"
+msgstr ""
+"Określony zestaw danych predykcji już istnieje.  Zamknij go lub wybierz inną"
+" nazwę"
+
+#: STATS_CITREE.R:270
+msgid ""
+"The input dataset must have a name if doing predictions.  Please assign one "
+"and rerun the procedure."
+msgstr ""
+"W przypadku prognozy wejściowy zestaw danych musi mieć nazwę.  Przypisz ją i"
+" uruchom procedurę ponownie."
+
+#: STATS_CITREE.R:286
+#, c-format
+msgid "The specified file does not contain a tree model: %s"
+msgstr "Podany plik nie zawiera modelu drzewa: %s"
+
+#: STATS_CITREE.R:299
+msgid "An id variable must be specified if making predictions"
+msgstr "Należy określić zmienną id, aby tworzyć predykcje"
+
+#: STATS_CITREE.R:302
+msgid "No model is estimated or loaded from a file"
+msgstr "Żaden model nie został oszacowany ani załadowany z pliku"
+
+#: STATS_CITREE.R:306
+msgid ""
+"Regression variables are only for model-based recursive partitioning (MOB) "
+"models"
+msgstr ""
+"Zmienne regresji są przeznaczone wyłącznie dla modeli bazujących na "
+"rekurencyjnym partycjonowaniu (MOB)"
+
+#: STATS_CITREE.R:329
+msgid "Split files is not supported by this procedure"
+msgstr "Ta procedura nie obsługuje dzielenia plików"
+
+#: STATS_CITREE.R:332
+msgid ""
+"at least one dependent variable appears in the independent or regression "
+"variable list"
+msgstr ""
+"przynajmniej jedna zmienna zależna pojawia się na liście zmiennych "
+"niezależnych lub regresji"
+
+#: STATS_CITREE.R:364
+msgid "error fetching data"
+msgstr "błąd pobierania danych"
+
+#: STATS_CITREE.R:381
+msgid ""
+"The weight variable must have a scale measurement level to use this "
+"procedure."
+msgstr ""
+"Aby użyć tej procedury, zmienna wagi musi mieć poziom pomiaru ilościowego."
+
+#: STATS_CITREE.R:392
+msgid "Model was estimated with case weights, but dataset is not"
+msgstr "Model został oszacowany z wagami przypadków, ale zbiór danych nie"
+
+#: STATS_CITREE.R:398
+#, c-format
+msgid "Computed by the R partykit package, version %s"
+msgstr "Obliczone przez pakiet R partykit, wersja %s"
+
+#: STATS_CITREE.R:406
+msgid "Dependent or independent variable specification missing"
+msgstr "Brak specyfikacji zmiennej zależnej lub niezależnej"
+
+#: STATS_CITREE.R:477
+msgid "error estimating tree"
+msgstr "błąd podczas szacowania drzewa"
+
+#: STATS_CITREE.R:485
+msgid "There is no model file to save"
+msgstr "Nie ma pliku modelu do zapisania"
+
+#: STATS_CITREE.R:509
+msgid "There is no tree from estimation or a model file"
+msgstr "Nie ma drzewa określonego w wyniku szacowania lub pliku modelu"
+
+#: STATS_CITREE.R:522
+#, c-format
+msgid ""
+"There are only %s trees. Higher numbered nodes requested to print are "
+"ignored "
+msgstr ""
+"Jest tylko %s drzew. Wyświetlanie węzłów o wyższych numerach jest ignorowane"
+" "
+
+#: STATS_CITREE.R:552
+#, c-format
+msgid ""
+"There are only %s trees. Higher numbered nodes requested to plot are ignored"
+" "
+msgstr ""
+"Jest tylko %s drzew. Wykreślanie węzłów o wyższych numerach jest ignorowane "
+
+#: STATS_CITREE.R:629
+msgid "Invalid combination of testtype parameters"
+msgstr "Niepoprawna kombinacja parametrów dla typu testu"
+
+#: STATS_CITREE.R:643
+msgid "Dependent Variatbles"
+msgstr "Zmienne zależne"
+
+#: STATS_CITREE.R:644 STATS_CITREE.R:694
+msgid "Independent Variables"
+msgstr "Zmienne niezależne"
+
+#: STATS_CITREE.R:645 STATS_CITREE.R:696
+msgid "Factor Mode"
+msgstr "Tryb czynnika"
+
+#: STATS_CITREE.R:646 STATS_CITREE.R:697
+msgid "Id Variable"
+msgstr "Zmienna Id"
+
+#: STATS_CITREE.R:647
+msgid "model Type"
+msgstr "typ modelu"
+
+#: STATS_CITREE.R:648 STATS_CITREE.R:699 STATS_CITREE.R:1538
+#: STATS_CITREE.R:1541
+msgid "Number of Cases"
+msgstr "Liczba obserwacji"
+
+#: STATS_CITREE.R:649 STATS_CITREE.R:700
+msgid "Number of Tree Levels"
+msgstr "Liczba poziomów drzew"
+
+#: STATS_CITREE.R:650 STATS_CITREE.R:701
+msgid "Number of Terminal Nodes"
+msgstr "Liczba węzłów końcowych"
+
+#: STATS_CITREE.R:651 STATS_CITREE.R:702
+msgid "Source File"
+msgstr "Plik źródłowy"
+
+#: STATS_CITREE.R:652 STATS_CITREE.R:703
+msgid "Estimation Date"
+msgstr "Data oszacowania"
+
+#: STATS_CITREE.R:653 STATS_CITREE.R:704
+msgid "Saved Model File"
+msgstr "Plik zapisanego modelu"
+
+#: STATS_CITREE.R:654 STATS_CITREE.R:705
+msgid "User Missing Values"
+msgstr "Braki danych zdefiniowane przez użytkownika"
+
+#: STATS_CITREE.R:656
+msgid "Test Statistic"
+msgstr "Statystyki testu"
+
+#: STATS_CITREE.R:657
+msgid "Split Statistic"
+msgstr "Statystyka podziału"
+
+#: STATS_CITREE.R:658
+msgid "Test Type"
+msgstr "Typ testu"
+
+#: STATS_CITREE.R:660
+msgid "Log Minimum Criterion"
+msgstr "Kryterium minimalnego logarytmu"
+
+#: STATS_CITREE.R:661
+msgid "Minimum Node Cases Allowed"
+msgstr "Minimalne dozwolone przypadki węzłów"
+
+#: STATS_CITREE.R:662
+msgid "Minimum Cases in a Terminal Node"
+msgstr "Minimalne przypadki w węźle końcowym"
+
+#: STATS_CITREE.R:663
+msgid "Minimum Proportion of Cases For a Terminal Node"
+msgstr "Minimalna proporcja przypadków dla węzła końcowego"
+
+#: STATS_CITREE.R:664 STATS_CITREE.R:709
+msgid "Maximum Depth"
+msgstr "Maksymalna głębokość"
+
+#: STATS_CITREE.R:665
+msgid "Max Surrogates"
+msgstr "Maks. substytuty"
+
+#: STATS_CITREE.R:678 STATS_CITREE.R:728
+msgid "--not saved--"
+msgstr "--nie zostało zapisane--"
+
+#: STATS_CITREE.R:679 STATS_CITREE.R:729
+msgid "include"
+msgstr "uwzględnij"
+
+#: STATS_CITREE.R:679 STATS_CITREE.R:729
+msgid "exclude"
+msgstr "exclude (wyłączanie)"
+
+#: STATS_CITREE.R:693
+msgid "Dependent Variables"
+msgstr "Zmienna zależna"
+
+#: STATS_CITREE.R:695
+msgid "Regression Variables"
+msgstr "Zmienne regresji"
+
+#: STATS_CITREE.R:698
+msgid "Model Type"
+msgstr "Typ modelu"
+
+#: STATS_CITREE.R:707
+msgid "Alpha"
+msgstr "Alfa"
+
+#: STATS_CITREE.R:708
+msgid "Bonferroni"
+msgstr "Bonferroni"
+
+#: STATS_CITREE.R:710
+msgid "Minimum Node Cases"
+msgstr "Minimalne przypadki węzłów"
+
+#: STATS_CITREE.R:711
+msgid "Trimming"
+msgstr "Przycinanie"
+
+#: STATS_CITREE.R:712
+msgid "Post Pruning"
+msgstr "Przycinanie końcowe"
+
+#: STATS_CITREE.R:713
+msgid "Testtype for Ordinal Variables"
+msgstr "Typ testu dla zmiennych porządkowych"
+
+#: STATS_CITREE.R:714
+msgid "Minimum Node Size Allowed"
+msgstr "Minimalna dozwolona wielkość węzła"
+
+#: STATS_CITREE.R:731
+msgid "yes"
+msgstr "tak"
+
+#: STATS_CITREE.R:731
+msgid "no"
+msgstr "nie"
+
+#: STATS_CITREE.R:744 STATS_CITREE.R:745
+msgid "Tree Parameters"
+msgstr "Parametry drzewa"
+
+#: STATS_CITREE.R:791
+msgid "Variable Importance"
+msgstr "Ważność zmiennych"
+
+#: STATS_CITREE.R:792
+msgid "Importance"
+msgstr "Ważność"
+
+#: STATS_CITREE.R:793
+msgid "Variable"
+msgstr "Zmienna"
+
+#: STATS_CITREE.R:793
+msgid "Log Likelihood"
+msgstr "Logarytm wiarygodności"
+
+#: STATS_CITREE.R:817
+msgid "Structural Tests"
+msgstr "Testy strukturalne"
+
+#: STATS_CITREE.R:901
+#, c-format
+msgid "Tree plot saved to %s"
+msgstr "Wykres drzewa zapisano w %s"
+
+#: STATS_CITREE.R:903
+#, c-format
+msgid "Cannot write to specified file: %s"
+msgstr "Nie można zapisać do podanego pliku: %s"
+
+#: STATS_CITREE.R:950
+msgid "Incomplete plot due to terminal node issue"
+msgstr "Niekompletny wykres z powodu problemu z węzłem końcowym"
+
+#: STATS_CITREE.R:1016
+msgid "Cannot combine categorical and scale variables in a prediction"
+msgstr "W predykcji nie można łączyć zmiennych jakościowych i ilościowych"
+
+#: STATS_CITREE.R:1020
+msgid "Quantile predictions are not available for categorical variables"
+msgstr "Predykcje kwantylowe nie są dostępne dla zmiennych jakościowych"
+
+#: STATS_CITREE.R:1024
+msgid "Class category predictions are not available for scale variables"
+msgstr "Predykcje kategorii klas nie są dostępne dla zmiennych ilościowych"
+
+#: STATS_CITREE.R:1038
+#, c-format
+msgid "%s cases not predicted due to missing data"
+msgstr "%s przypadki nieprzewidziane z powodu brakujących danych"
+
+#: STATS_CITREE.R:1065
+msgid "Quantile not in [0, 1]"
+msgstr "Kwantyl nie w [0, 1]"
+
+#: STATS_CITREE.R:1137
+msgid "Response"
+msgstr "Odpowiedź"
+
+#: STATS_CITREE.R:1385
+msgid "No data available.  Confusion table omitted."
+msgstr "Nie są dostępne żadne dane.  Tabela pomyłek została pominięta."
+
+#: STATS_CITREE.R:1402
+msgid "Confusion table not available due to missing prediction(s)"
+msgstr "Tabela pomyłek nie jest dostępna z powodu braku predykcji"
+
+#: STATS_CITREE.R:1433
+#, c-format
+msgid "Correct: count: %s, Percentage: %s"
+msgstr "Poprawnie: liczba: %s, procent: %s"
+
+#: STATS_CITREE.R:1444 STATS_CITREE.R:1452
+msgid "Total"
+msgstr "Suma"
+
+#: STATS_CITREE.R:1456
+#, c-format
+msgid "Confusion Matrix - %s"
+msgstr "Tablica pomyłek – %s"
+
+#: STATS_CITREE.R:1457
+msgid "Observed"
+msgstr "Obserwowane"
+
+#: STATS_CITREE.R:1457
+msgid "Predicted"
+msgstr "Przewidywane"
+
+#: STATS_CITREE.R:1532
+msgid "Node summary table is not available"
+msgstr "Tabela podsumowująca węzły nie jest dostępna"
+
+#: STATS_CITREE.R:1538 STATS_CITREE.R:1541
+msgid "Node"
+msgstr "Węzeł"
+
+#: STATS_CITREE.R:1538 STATS_CITREE.R:1541
+msgid "Percent of Cases"
+msgstr "Procent obserwacji"
+
+#: STATS_CITREE.R:1539 STATS_CITREE.R:1542
+msgid "Mode"
+msgstr "Tryb"
+
+#: STATS_CITREE.R:1539
+msgid "Mean"
+msgstr "Średnia"
+
+#: STATS_CITREE.R:1542
+msgid "Percent at Mode"
+msgstr "Procent w trybie"
+
+#: STATS_CITREE.R:1551
+#, c-format
+msgid "Terminal Node Statistics: %s"
+msgstr "Statystyki węzła końcowego: %s"
+
+#: STATS_CITREE.R:1552
+msgid "Statistics"
+msgstr "Statystyka"
+
+#: STATS_CITREE.R:1557
+msgid "Even if there are multiple modes, only one is shown per node"
+msgstr ""
+"Nawet jeśli istnieje wiele trybów, dla każdego węzła wyświetlany jest tylko "
+"jeden"
+
+#: STATS_CITREE.R:1662
+msgid "Node Path"
+msgstr "Ścieżka węzła"
+
+#: STATS_CITREE.R:1786
+#, c-format
+msgid "The specified vignette, %s, is not available"
+msgstr "Określona winieta %s nie jest dostępna"
+
+#: STATS_CITREE.R:1837
+#, c-format
+msgid "Categorical variables cannot have more than 30 categories: %s"
+msgstr "Zmienne jakościowe nie mogą mieć więcej niż 30 kategorii: %s"
+
+#: STATS_CITREE.R:1003
+msgid "MOB models can only predict one dependent variable."
+msgstr "Modele MOB mogą przewidywać tylko jedną zmienną zależną."

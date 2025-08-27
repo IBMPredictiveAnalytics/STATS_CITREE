@@ -1,0 +1,466 @@
+# /***********************************************************************
+# * Licensed Materials - Property of IBM 
+# *
+# * IBM SPSS Products: Statistics Common
+# *
+# * (C) Copyright IBM Corp. 1989, 2025
+# *
+# * US Government Users Restricted Rights - Use, duplication or disclosure
+# * restricted by GSA ADP Schedule Contract with IBM Corp. 
+# ************************************************************************/
+
+msgid ""
+msgstr ""
+"Project-Id-Version: STATS_CITREE 1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-07-09 13:36+0530\n"
+"PO-Revision-Date: 2025-07-09 13:36+0530\n"
+"Last-Translator: \n"
+"Language-Team: zh_TW <zh_TW@example.com>\n"
+"Language: zh_TW\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: STATS_CITREE.R:82
+msgid "End of procedure"
+msgstr "程序的結尾"
+
+#: STATS_CITREE.R:111
+msgid "Message Number"
+msgstr "訊息號碼"
+
+#: STATS_CITREE.R:145
+#, c-format
+msgid "Invalid variable name!!!: %s"
+msgstr "無效的變數名稱：%s"
+
+#: STATS_CITREE.R:174 STATS_CITREE.R:314
+msgid "Conditional Inference Trees"
+msgstr "條件推論樹狀結構"
+
+#: STATS_CITREE.R:175
+msgid "Inference Trees Warnings"
+msgstr "推論樹狀結構警告"
+
+#: STATS_CITREE.R:219
+msgid "No tree is available for use in prediction"
+msgstr "無法使用樹狀結構進行預測"
+
+#: STATS_CITREE.R:224
+#, c-format
+msgid "workspace restored from %s"
+msgstr "工作區從 %s 還原"
+
+#: STATS_CITREE.R:235
+msgid "Dependent and independent variables must be specified if estimating"
+msgstr "如果要進行預估，必須指定依變數和自變數"
+
+#: STATS_CITREE.R:240
+msgid "Cannot specify a model file while action is estimate"
+msgstr "預估動作時無法指定模型檔案"
+
+#: STATS_CITREE.R:249
+msgid "A  model source must be specified"
+msgstr "必須指定模型來源"
+
+#: STATS_CITREE.R:252
+msgid ""
+"A model file cannot be saved, because no model has been estimated or loaded"
+msgstr "無法儲存模型檔案，因為尚未預估或載入模型"
+
+#: STATS_CITREE.R:256
+msgid "A dataset must be specified if making predictions"
+msgstr "如果要進行預測，必須指定資料集"
+
+#: STATS_CITREE.R:260
+msgid "If predicting, a model source must be specified"
+msgstr "如果要進行預測，則必須指定模型來源"
+
+#: STATS_CITREE.R:266
+msgid ""
+"The prediction dataset specified already exists.  Please close it or choose "
+"a different name"
+msgstr "指定的預測資料集已經存在。  請將其關閉或選擇其他名稱"
+
+#: STATS_CITREE.R:270
+msgid ""
+"The input dataset must have a name if doing predictions.  Please assign one "
+"and rerun the procedure."
+msgstr "如果要進行預測，輸入資料集必須有一個名稱。  請指派一個，並重新執行程序。"
+
+#: STATS_CITREE.R:286
+#, c-format
+msgid "The specified file does not contain a tree model: %s"
+msgstr "指定的檔案不包含樹狀結構模型：%s"
+
+#: STATS_CITREE.R:299
+msgid "An id variable must be specified if making predictions"
+msgstr "如果要進行預測，則必須指定 ID 變數"
+
+#: STATS_CITREE.R:302
+msgid "No model is estimated or loaded from a file"
+msgstr "未從檔案預估模型或載入模型"
+
+#: STATS_CITREE.R:306
+msgid ""
+"Regression variables are only for model-based recursive partitioning (MOB) "
+"models"
+msgstr "迴歸變數僅適用於基於模型的遞迴分割 (MOB) 模型"
+
+#: STATS_CITREE.R:329
+msgid "Split files is not supported by this procedure"
+msgstr "本程序不支援分割檔案"
+
+#: STATS_CITREE.R:332
+msgid ""
+"at least one dependent variable appears in the independent or regression "
+"variable list"
+msgstr "至少有一個依變數出現在自變數或迴歸變數的清單中"
+
+#: STATS_CITREE.R:364
+msgid "error fetching data"
+msgstr "提取資料時發生錯誤"
+
+#: STATS_CITREE.R:381
+msgid ""
+"The weight variable must have a scale measurement level to use this "
+"procedure."
+msgstr "加權變數必須具有尺度測量層級，才能使用此程序。"
+
+#: STATS_CITREE.R:392
+msgid "Model was estimated with case weights, but dataset is not"
+msgstr "模型是用案例權重預估的，但資料集不是"
+
+#: STATS_CITREE.R:398
+#, c-format
+msgid "Computed by the R partykit package, version %s"
+msgstr "由 R partykit 套件計算，版本為 %s"
+
+#: STATS_CITREE.R:406
+msgid "Dependent or independent variable specification missing"
+msgstr "依變數或自變數的規格遺漏"
+
+#: STATS_CITREE.R:477
+msgid "error estimating tree"
+msgstr "預估樹狀結構時發生錯誤"
+
+#: STATS_CITREE.R:485
+msgid "There is no model file to save"
+msgstr "沒有模型檔案可儲存"
+
+#: STATS_CITREE.R:509
+msgid "There is no tree from estimation or a model file"
+msgstr "沒有來自預估或模型檔案的樹狀結構"
+
+#: STATS_CITREE.R:522
+#, c-format
+msgid ""
+"There are only %s trees. Higher numbered nodes requested to print are "
+"ignored "
+msgstr "僅 %s 樹狀結構。 要求列印的節點編號過高，已被忽略 "
+
+#: STATS_CITREE.R:552
+#, c-format
+msgid ""
+"There are only %s trees. Higher numbered nodes requested to plot are ignored"
+" "
+msgstr "僅 %s 樹狀結構。 要求繪製的節點編號過高，已被忽略 "
+
+#: STATS_CITREE.R:629
+msgid "Invalid combination of testtype parameters"
+msgstr "testtype 參數組合無效"
+
+#: STATS_CITREE.R:643
+msgid "Dependent Variatbles"
+msgstr "依變數"
+
+#: STATS_CITREE.R:644 STATS_CITREE.R:694
+msgid "Independent Variables"
+msgstr "自變數(V)"
+
+#: STATS_CITREE.R:645 STATS_CITREE.R:696
+msgid "Factor Mode"
+msgstr "因子模式"
+
+#: STATS_CITREE.R:646 STATS_CITREE.R:697
+msgid "Id Variable"
+msgstr "ID 變數"
+
+#: STATS_CITREE.R:647
+msgid "model Type"
+msgstr "模型類型"
+
+#: STATS_CITREE.R:648 STATS_CITREE.R:699 STATS_CITREE.R:1538
+#: STATS_CITREE.R:1541
+msgid "Number of Cases"
+msgstr "個案數目"
+
+#: STATS_CITREE.R:649 STATS_CITREE.R:700
+msgid "Number of Tree Levels"
+msgstr "樹狀結構層級數"
+
+#: STATS_CITREE.R:650 STATS_CITREE.R:701
+msgid "Number of Terminal Nodes"
+msgstr "終端機節點數目"
+
+#: STATS_CITREE.R:651 STATS_CITREE.R:702
+msgid "Source File"
+msgstr "原始檔"
+
+#: STATS_CITREE.R:652 STATS_CITREE.R:703
+msgid "Estimation Date"
+msgstr "預估日期"
+
+#: STATS_CITREE.R:653 STATS_CITREE.R:704
+msgid "Saved Model File"
+msgstr "儲存的模型檔案"
+
+#: STATS_CITREE.R:654 STATS_CITREE.R:705
+msgid "User Missing Values"
+msgstr "使用者遺漏值"
+
+#: STATS_CITREE.R:656
+msgid "Test Statistic"
+msgstr "檢定統計資料"
+
+#: STATS_CITREE.R:657
+msgid "Split Statistic"
+msgstr "分割統計"
+
+#: STATS_CITREE.R:658
+msgid "Test Type"
+msgstr "檢定類型"
+
+#: STATS_CITREE.R:660
+msgid "Log Minimum Criterion"
+msgstr "對數最小準則"
+
+#: STATS_CITREE.R:661
+msgid "Minimum Node Cases Allowed"
+msgstr "容許的最小節點案例"
+
+#: STATS_CITREE.R:662
+msgid "Minimum Cases in a Terminal Node"
+msgstr "終端節點中的最小案例"
+
+#: STATS_CITREE.R:663
+msgid "Minimum Proportion of Cases For a Terminal Node"
+msgstr "終端節點所需的最小案例比例"
+
+#: STATS_CITREE.R:664 STATS_CITREE.R:709
+msgid "Maximum Depth"
+msgstr "最大深度"
+
+#: STATS_CITREE.R:665
+msgid "Max Surrogates"
+msgstr "代理變數的最大數量"
+
+#: STATS_CITREE.R:678 STATS_CITREE.R:728
+msgid "--not saved--"
+msgstr "--未儲存--"
+
+#: STATS_CITREE.R:679 STATS_CITREE.R:729
+msgid "include"
+msgstr "包括"
+
+#: STATS_CITREE.R:679 STATS_CITREE.R:729
+msgid "exclude"
+msgstr "排除"
+
+#: STATS_CITREE.R:693
+msgid "Dependent Variables"
+msgstr "應變數"
+
+#: STATS_CITREE.R:695
+msgid "Regression Variables"
+msgstr "迴歸變數"
+
+#: STATS_CITREE.R:698
+msgid "Model Type"
+msgstr "模型類型"
+
+#: STATS_CITREE.R:707
+msgid "Alpha"
+msgstr "Alpha"
+
+#: STATS_CITREE.R:708
+msgid "Bonferroni"
+msgstr "Bonferroni 法"
+
+#: STATS_CITREE.R:710
+msgid "Minimum Node Cases"
+msgstr "最小節點案例"
+
+#: STATS_CITREE.R:711
+msgid "Trimming"
+msgstr "修剪"
+
+#: STATS_CITREE.R:712
+msgid "Post Pruning"
+msgstr "刪改後"
+
+#: STATS_CITREE.R:713
+msgid "Testtype for Ordinal Variables"
+msgstr "序數變數的 Testtype"
+
+#: STATS_CITREE.R:714
+msgid "Minimum Node Size Allowed"
+msgstr "容許的最小節點大小"
+
+#: STATS_CITREE.R:731
+msgid "yes"
+msgstr "是"
+
+#: STATS_CITREE.R:731
+msgid "no"
+msgstr "否"
+
+#: STATS_CITREE.R:744 STATS_CITREE.R:745
+msgid "Tree Parameters"
+msgstr "樹狀結構參數"
+
+#: STATS_CITREE.R:791
+msgid "Variable Importance"
+msgstr "變數重要性"
+
+#: STATS_CITREE.R:792
+msgid "Importance"
+msgstr "重要性"
+
+#: STATS_CITREE.R:793
+msgid "Variable"
+msgstr "變數"
+
+#: STATS_CITREE.R:793
+msgid "Log Likelihood"
+msgstr "對數概似"
+
+#: STATS_CITREE.R:817
+msgid "Structural Tests"
+msgstr "結構測試"
+
+#: STATS_CITREE.R:901
+#, c-format
+msgid "Tree plot saved to %s"
+msgstr "樹狀圖儲存至 %s"
+
+#: STATS_CITREE.R:903
+#, c-format
+msgid "Cannot write to specified file: %s"
+msgstr "無法寫入指定的檔案：%s"
+
+#: STATS_CITREE.R:950
+msgid "Incomplete plot due to terminal node issue"
+msgstr "由於終端節點問題導致圖形不完整"
+
+#: STATS_CITREE.R:1016
+msgid "Cannot combine categorical and scale variables in a prediction"
+msgstr "無法在預測中結合種類與尺度變數"
+
+#: STATS_CITREE.R:1020
+msgid "Quantile predictions are not available for categorical variables"
+msgstr "量化預測不適用於種類變數"
+
+#: STATS_CITREE.R:1024
+msgid "Class category predictions are not available for scale variables"
+msgstr "類別種類預測不可用於尺度變數"
+
+#: STATS_CITREE.R:1038
+#, c-format
+msgid "%s cases not predicted due to missing data"
+msgstr "因資料遺漏而無法預測的 %s 案例"
+
+#: STATS_CITREE.R:1065
+msgid "Quantile not in [0, 1]"
+msgstr "量值不在 [0, 1] 之內"
+
+#: STATS_CITREE.R:1137
+msgid "Response"
+msgstr "回應"
+
+#: STATS_CITREE.R:1385
+msgid "No data available.  Confusion table omitted."
+msgstr "沒有可用的資料。  混淆表省略。"
+
+#: STATS_CITREE.R:1402
+msgid "Confusion table not available due to missing prediction(s)"
+msgstr "由於遺漏預測，混淆表無法使用"
+
+#: STATS_CITREE.R:1433
+#, c-format
+msgid "Correct: count: %s, Percentage: %s"
+msgstr "正確：計數：%s，百分比：%s"
+
+#: STATS_CITREE.R:1444 STATS_CITREE.R:1452
+msgid "Total"
+msgstr "總計"
+
+#: STATS_CITREE.R:1456
+#, c-format
+msgid "Confusion Matrix - %s"
+msgstr "混淆矩陣 - %s"
+
+#: STATS_CITREE.R:1457
+msgid "Observed"
+msgstr "觀察值"
+
+#: STATS_CITREE.R:1457
+msgid "Predicted"
+msgstr "預測"
+
+#: STATS_CITREE.R:1532
+msgid "Node summary table is not available"
+msgstr "節點摘要表格無法使用"
+
+#: STATS_CITREE.R:1538 STATS_CITREE.R:1541
+msgid "Node"
+msgstr "節點 (Node)"
+
+#: STATS_CITREE.R:1538 STATS_CITREE.R:1541
+msgid "Percent of Cases"
+msgstr "觀察值百分比"
+
+#: STATS_CITREE.R:1539 STATS_CITREE.R:1542
+msgid "Mode"
+msgstr "模式"
+
+#: STATS_CITREE.R:1539
+msgid "Mean"
+msgstr "平均數"
+
+#: STATS_CITREE.R:1542
+msgid "Percent at Mode"
+msgstr "模式百分比"
+
+#: STATS_CITREE.R:1551
+#, c-format
+msgid "Terminal Node Statistics: %s"
+msgstr "終端節點統計：%s"
+
+#: STATS_CITREE.R:1552
+msgid "Statistics"
+msgstr "統計資料"
+
+#: STATS_CITREE.R:1557
+msgid "Even if there are multiple modes, only one is shown per node"
+msgstr "即使有多種模式，每個節點也只顯示一種"
+
+#: STATS_CITREE.R:1662
+msgid "Node Path"
+msgstr "節點路徑"
+
+#: STATS_CITREE.R:1786
+#, c-format
+msgid "The specified vignette, %s, is not available"
+msgstr "指定的插圖 %s 不存在。"
+
+#: STATS_CITREE.R:1837
+#, c-format
+msgid "Categorical variables cannot have more than 30 categories: %s"
+msgstr "種類變數不能超過 30 個種類：%s"
+
+#: STATS_CITREE.R:1003
+msgid "MOB models can only predict one dependent variable."
+msgstr "MOB 模型只能預測一個依變數。"

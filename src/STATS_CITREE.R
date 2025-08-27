@@ -11,11 +11,11 @@
 
 # helpers
 gtxt <- function(...) {
-    return(gettext(...,domain="STATS_CTREE"))
+    return(gettext(...,domain="STATS_CITREE"))
 }
 
 gtxtf <- function(...) {
-    return(gettextf(...,domain="STATS_CTREE"))
+    return(gettextf(...,domain="STATS_CITREE"))
 }
 
 loadmsg = "The R %s package is required but could not be loaded."
