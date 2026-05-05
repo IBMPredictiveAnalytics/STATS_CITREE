@@ -10,8 +10,8 @@ Description: This procedure calculates and displays conditional infere
  nce and model-based classification and regression trees.  Tree tables
   and plots are available, and the tree can be used for predictions
 Author: Jon K. Peck
-Version: 1.0.1
-Product-Version: 31
+Version: 1.0.2
+Product-Version: 29
 Date: 05/1/2025
 Categories: tree statistics classification regression
 Plugins: Python,R
